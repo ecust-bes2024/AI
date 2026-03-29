@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Boot</title>
+    <style>
+        :root {
+            --bg-top: #efe6d7;
+            --bg-bottom: #e6d9c4;
+            --paper-top: #fbf6ec;
+            --paper-bottom: #f7efdf;
+            --ink: #2b241e;
+            --muted: #706457;
+            --line: rgba(196, 173, 141, 0.40);
+            --accent: #c57c2f;
+            --accent-2: #5e83bc;
+            --accent-3: #5b9270;
+            --accent-4: #7a68b1;
+            --hero-glow: rgba(255,255,255,0.45);
+            --title-font: "Georgia", "Times New Roman", "Songti SC", serif;
+            --heading-font: "Helvetica Neue", "Avenir Next", "PingFang SC", sans-serif;
+            --label-font: "Helvetica Neue", "Avenir Next", "PingFang SC", sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at top left, var(--hero-glow), transparent 28%),
+                linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+            color: var(--ink);
+            padding: 18px 0 28px;
+            line-height: 1.6;
+        }
+        .poster {
+            width: 820px;
+            margin: 0 auto;
+            padding: 0 14px;
+        }
+        .paper {
+            position: relative;
+            background: linear-gradient(180deg, var(--paper-top), var(--paper-bottom));
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 0 10px 28px rgba(79, 63, 40, 0.10);
+            overflow: hidden;
+        }
+        .paper::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.34), transparent 20%),
+                radial-gradient(circle at top right, rgba(255,255,255,0.22), transparent 20%);
+            pointer-events: none;
+        }
+        .hero {
+            padding: 18px 18px 14px;
+            margin-bottom: 12px;
+        }
+        .hero-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .hero-tag {
+            font-family: var(--label-font);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            background: rgba(255,255,255,0.74);
+            border: 1px solid var(--line);
+            letter-spacing: 0.02em;
+        }
+        h1 {
+            font-family: var(--title-font);
+            font-size: 50px;
+            line-height: 1.01;
+            letter-spacing: -0.025em;
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-wrap: balance;
+        }
+        .hero-subtitle {
+            font-family: var(--label-font);
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 10px;
+            letter-spacing: 0.015em;
+        }
+        .hero-summary {
+            font-size: 11px;
+            color: var(--ink);
+            opacity: 0.84;
+            line-height: 1.62;
+            margin-bottom: 10px;
+        }
+        .meta-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .meta-pill {
+            font-family: var(--label-font);
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            color: var(--muted);
+            background: rgba(255,255,255,0.68);
+            border: 1px solid var(--line);
+            letter-spacing: 0.01em;
+        }
+        .summary-grid,
+        .metrics-grid,
+        .detail-grid,
+        .insight-grid,
+        .decision-grid {
+            display: grid;
+            gap: 9px;
+            margin-bottom: 12px;
+        }
+        .summary-grid, .metrics-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        .detail-grid, .insight-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .decision-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .summary-card,
+        .metric-card,
+        .detail-card,
+        .insight-card,
+        .decision-card {
+            position: relative;
+            background: rgba(255,255,255,0.74);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(97, 77, 46, 0.06);
+            overflow: hidden;
+        }
+        .summary-card, .metric-card {
+            padding: 12px 11px 12px;
+            min-height: 92px;
+        }
+        .detail-card, .insight-card, .decision-card {
+            padding: 14px 14px 16px;
+        }
+        .summary-card {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.74));
+        }
+        .summary-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--accent), var(--accent-2));
+            opacity: 0.92;
+        }
+        .summary-card::after, .insight-card::after, .decision-card::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            opacity: 0.9;
+        }
+        .summary-label, .detail-kicker, .card-kicker, .metric-index {
+            font-family: var(--label-font);
+            font-size: 9.5px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 7px;
+            font-weight: 600;
+        }
+        .summary-title, .detail-title, .card-headline, .metric-label {
+            font-family: var(--heading-font);
+            font-weight: 850;
+            line-height: 1.3;
+            margin-bottom: 8px;
+        }
+        .summary-title {
+            font-size: 14px;
+            margin-bottom: 6px;
+            padding-left: 2px;
+            letter-spacing: -0.01em;
+        }
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 0.98;
+            letter-spacing: -0.015em;
+            margin-bottom: 6px;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        .metric-value.compact {
+            font-size: 24px;
+            line-height: 1.02;
+            letter-spacing: -0.01em;
+        }
+        .metric-label { font-size: 13px; }
+        .summary-text, .metric-note, .detail-body, .card-copy, .detail-extra {
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+        .summary-text {
+            font-size: 10.5px;
+            line-height: 1.5;
+            color: rgba(0,0,0,0.64);
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 4;
+            overflow: hidden;
+        }
+        .detail-title, .card-headline {
+            font-size: 19px;
+            letter-spacing: -0.01em;
+            line-height: 1.18;
+        }
+        .detail-body, .card-copy { font-size: 12px; color: rgba(0,0,0,0.68); }
+        .detail-list {
+            margin-top: 10px;
+            padding-left: 16px;
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+        .detail-extra p {
+            margin-top: 8px;
+        }
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--heading-font);
+            font-size: 22px;
+            font-weight: 720;
+            letter-spacing: -0.015em;
+            margin: 0 0 8px;
+        }
+        .section-heading::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+            opacity: 0.45;
+        }
+        .tone-0 { color: var(--accent); }
+        .tone-1 { color: var(--accent-2); }
+        .tone-2 { color: var(--accent-3); }
+        .tone-3 { color: var(--accent-4); }
+        .footer {
+            margin-top: 2px;
+            padding: 8px 4px 0;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 0.04em;
+            line-height: 1.8;
+        }
+        .footer-rule {
+            height: 1px;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.35;
+        }
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            background: rgba(255,255,255,0.62);
+            padding: 1px 5px;
+            border-radius: 5px;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <section class="paper hero">
+            <div class="hero-tags"><span class='hero-tag'>MARKDOWN</span><span class='hero-tag'>Core Concepts</span></div>
+            <h1>Spring Boot</h1>
+            <div class="hero-subtitle">Learning guide for fast onboarding, code reading, and concept review.</div>
+            <div class="hero-summary">Learning guide for fast onboarding, code reading, and concept review.</div>
+            <div class="meta-row">
+                <span class="meta-pill">Theme: research</span>
+                <span class="meta-pill">Source: markdown</span>
+                <span class="meta-pill">Date: 2026-03-29</span>
+                <span class="meta-pill">Sections: 6</span>
+            </div>
+            <div class="summary-grid">
+            <article class="summary-card">
+                <div class="summary-label">Block 01</div>
+                <div class="summary-title tone-0">Core Concepts</div>
+                <div class="summary-text">@SpringBootApplication · @EnableAutoConfiguration</div>
+            </article>
+            
+
+            <article class="summary-card">
+                <div class="summary-label">Block 02</div>
+                <div class="summary-title tone-1">Key Features</div>
+                <div class="summary-text">starter dependencies · auto configuration</div>
+            </article>
+            
+
+            <article class="summary-card">
+                <div class="summary-label">Block 03</div>
+                <div class="summary-title tone-2">Project Structure</div>
+                <div class="summary-text">controller · service</div>
+            </article>
+            
+
+            <article class="summary-card">
+                <div class="summary-label">Block 04</div>
+                <div class="summary-title tone-3">Practical Checklist</div>
+                <div class="summary-text">main class 在哪里 · 自动配置生效路径</div>
+            </article>
+            </div>
+        </section>
+
+        
+        <section>
+            <div class="section-heading">Key Metrics</div>
+            <div class='metrics-grid'>
+            <article class="metric-card">
+                <div class="metric-index">01</div>
+                <div class="metric-value compact tone-0">MARKDOWN</div>
+                <div class="metric-label">Input Type</div>
+                <div class="metric-note">auto-detected</div>
+            </article>
+            
+
+            <article class="metric-card">
+                <div class="metric-index">02</div>
+                <div class="metric-value tone-1">6</div>
+                <div class="metric-label">Sections</div>
+                <div class="metric-note">normalized blocks</div>
+            </article>
+            
+
+            <article class="metric-card">
+                <div class="metric-index">03</div>
+                <div class="metric-value tone-2">20</div>
+                <div class="metric-label">Bullet Points</div>
+                <div class="metric-note">key takeaways</div>
+            </article>
+            
+
+            <article class="metric-card">
+                <div class="metric-index">04</div>
+                <div class="metric-value tone-3">03-29</div>
+                <div class="metric-label">Build Date</div>
+                <div class="metric-note">poster render time</div>
+            </article>
+            </div>
+        </section>
+    
+        
+        <section>
+            <div class="section-heading">Detailed Sections</div>
+            <div class='detail-grid'>
+            <article class="detail-card">
+                <div class="detail-kicker">Finding 01</div>
+                <div class="detail-title tone-0">Core Concepts</div>
+                <div class="detail-body">Spring Boot 的核心思想是约定优于配置。通过自动装配机制，把常见工程化配置提前准备好，减少手工 wiring 的负担。</div>
+                <ul class="detail-list"><li>@SpringBootApplication</li><li>@EnableAutoConfiguration</li><li>@ComponentScan</li></ul>
+                
+            </article>
+            
+
+            <article class="detail-card">
+                <div class="detail-kicker">Finding 02</div>
+                <div class="detail-title tone-1">Key Features</div>
+                <div class="detail-body">内置 starter 体系让依赖和默认配置成组出现，能快速拉起 Web、Data、Actuator 等能力。</div>
+                <ul class="detail-list"><li>starter dependencies</li><li>auto configuration</li><li>actuator</li></ul>
+                
+            </article>
+            
+
+            <article class="detail-card">
+                <div class="detail-kicker">Finding 03</div>
+                <div class="detail-title tone-2">Project Structure</div>
+                <div class="detail-body">推荐把入口、配置、业务、基础设施按职责拆开，避免所有代码平铺在一个 package 下。</div>
+                <ul class="detail-list"><li>controller</li><li>service</li><li>repository</li></ul>
+                
+            </article>
+            
+
+            <article class="detail-card">
+                <div class="detail-kicker">Finding 04</div>
+                <div class="detail-title tone-3">Practical Checklist</div>
+                <div class="detail-body">第一次读 Spring Boot 项目时，不要先钻业务细节，先确认：</div>
+                <ul class="detail-list"><li>main class 在哪里</li><li>自动配置生效路径</li><li>profile 切换方式</li></ul>
+                
+            </article>
+            </div>
+        </section>
+    
+        
+        <section>
+            <div class="section-heading">Evidence / Highlights</div>
+            <div class='insight-grid'>
+            <article class="insight-card">
+                <div class="card-kicker">Evidence 1</div>
+                <div class="card-headline tone-0">Practical Checklist</div>
+                <div class="card-copy">main class 在哪里 · 自动配置生效路径</div>
+            </article>
+            
+
+            <article class="insight-card">
+                <div class="card-kicker">Evidence 2</div>
+                <div class="card-headline tone-1">Core Concepts</div>
+                <div class="card-copy">@SpringBootApplication · @EnableAutoConfiguration</div>
+            </article>
+            
+
+            <article class="insight-card">
+                <div class="card-kicker">Evidence 3</div>
+                <div class="card-headline tone-2">Key Features</div>
+                <div class="card-copy">starter dependencies · auto configuration</div>
+            </article>
+            
+
+            <article class="insight-card">
+                <div class="card-kicker">Evidence 4</div>
+                <div class="card-headline tone-3">Project Structure</div>
+                <div class="card-copy">controller · service</div>
+            </article>
+            </div>
+        </section>
+    
+        
+        <section>
+            <div class="section-heading">Decisions / Next Moves</div>
+            <div class='decision-grid'>
+            <article class="decision-card">
+                <div class="card-kicker">Takeaway 1</div>
+                <div class="card-headline tone-0">Sample Code</div>
+                <div class="card-copy">配置类注册 · 组件扫描</div>
+            </article>
+            
+
+            <article class="decision-card">
+                <div class="card-kicker">Takeaway 2</div>
+                <div class="card-headline tone-1">Important Notes</div>
+                <div class="card-copy">真正提高开发速度的不是“魔法”，而是把重复配置模块化。理解自动装配边界，比背注解名字更重要。</div>
+            </article>
+            
+
+            <article class="decision-card">
+                <div class="card-kicker">Takeaway 3</div>
+                <div class="card-headline tone-2">Practical Checklist</div>
+                <div class="card-copy">main class 在哪里 · 自动配置生效路径</div>
+            </article>
+            
+
+            <article class="decision-card">
+                <div class="card-kicker">Takeaway 4</div>
+                <div class="card-headline tone-3">Project Structure</div>
+                <div class="card-copy">controller · service</div>
+            </article>
+            </div>
+        </section>
+    
+
+        <div class="footer">
+            <div class="footer-rule"></div>
+            Generated from markdown · 2026-03-29
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Boot</title>
+    <style>
+        :root {
+            --bg-top: #efe4cf;
+            --bg-bottom: #e2d1b3;
+            --paper: #fbf2df;
+            --ink: #2d221b;
+            --muted: #7b6652;
+            --line: rgba(86, 67, 48, 0.28);
+            --accent: #d55f57;
+            --accent-2: #5d8dbd;
+            --accent-3: #87b46f;
+            --accent-4: #d3a44a;
+            --note-1: #f4d66b;
+            --note-2: #cde3ac;
+            --note-3: #f5c6ba;
+            --note-4: #c8ddf4;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(255,255,255,0.42), transparent 18%),
+                linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+            color: var(--ink);
+            padding: 22px 0 34px;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(rgba(78, 58, 39, 0.12) 0.8px, transparent 0.8px),
+                radial-gradient(rgba(255,255,255,0.45) 0.7px, transparent 0.7px);
+            background-size: 16px 16px, 23px 23px;
+            background-position: 0 0, 8px 10px;
+            opacity: 0.24;
+        }
+        .poster {
+            width: 820px;
+            margin: 0 auto;
+            padding: 0 18px;
+            position: relative;
+        }
+        .hero {
+            position: relative;
+            background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.72));
+            border: 1.6px solid var(--line);
+            border-radius: 26px;
+            padding: 26px 26px 18px;
+            box-shadow: 0 18px 36px rgba(90, 66, 35, 0.12);
+            overflow: hidden;
+        }
+        .hero::before, .hero::after {
+            content: "";
+            position: absolute;
+            top: -8px;
+            width: 84px;
+            height: 22px;
+            border-radius: 4px;
+            opacity: 0.92;
+        }
+        .hero::before {
+            left: 18px;
+            background: var(--accent);
+            transform: rotate(-17deg);
+        }
+        .hero::after {
+            right: 18px;
+            background: var(--accent-2);
+            transform: rotate(17deg);
+        }
+        .script-title {
+            font-family: "Snell Roundhand", "Segoe Script", "Apple Chancery", cursive;
+            font-size: 56px;
+            line-height: 0.95;
+            text-align: center;
+            margin-top: 14px;
+            letter-spacing: -0.03em;
+        }
+        .sub-title {
+            text-align: center;
+            color: var(--accent);
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            margin-top: 8px;
+            text-transform: uppercase;
+        }
+        .badge-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 16px 0 8px;
+        }
+        .mini-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.88);
+            font-size: 11px;
+            font-weight: 800;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            text-transform: uppercase;
+        }
+        .summary {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.7;
+            max-width: 82%;
+            margin: 10px auto 0;
+        }
+        .notes {
+            display: grid;
+            gap: 22px;
+            margin-top: 18px;
+        }
+        .note-card {
+            position: relative;
+            background: var(--note-bg);
+            border: 3px solid rgba(40, 31, 24, 0.9);
+            border-radius: 24px;
+            padding: 20px 20px 18px;
+            box-shadow: 0 12px 24px rgba(78, 55, 25, 0.14);
+            transform: rotate(var(--rotate));
+        }
+        .card-tape {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            width: 72px;
+            height: 18px;
+            background: rgba(244, 180, 80, 0.72);
+            border-radius: 3px;
+            transform: translateX(-50%) rotate(-2deg);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28);
+        }
+        .note-kicker {
+            color: rgba(181, 88, 71, 0.92);
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+        .note-title {
+            font-size: 28px;
+            font-weight: 900;
+            margin-top: 6px;
+            margin-bottom: 10px;
+        }
+        .note-body {
+            font-size: 14px;
+            line-height: 1.75;
+            color: rgba(32,25,19,0.82);
+            margin-bottom: 14px;
+        }
+        .code-card {
+            background: #1f201d;
+            color: #f1ecd8;
+            border-radius: 18px;
+            padding: 0 0 12px;
+            margin-bottom: 14px;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+        }
+        .code-top {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 12px 14px 8px;
+        }
+        .code-top span {
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: #e27b6d;
+            display: inline-block;
+        }
+        .code-top span:nth-child(2) { background: #f2c465; }
+        .code-top span:nth-child(3) { background: #75b879; }
+        .code-top em {
+            margin-left: auto;
+            font-size: 11px;
+            color: rgba(255,255,255,0.56);
+            font-style: normal;
+            text-transform: uppercase;
+        }
+        .code-body {
+            font-family: "SFMono-Regular", Menlo, monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            padding: 0 14px;
+            white-space: pre-wrap;
+        }
+        .note-list {
+            padding-left: 22px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .note-list li {
+            margin-bottom: 4px;
+        }
+        .important {
+            text-align: right;
+            color: #bb5d48;
+            font-family: "Snell Roundhand", "Segoe Script", cursive;
+            font-size: 26px;
+            margin-top: 8px;
+            transform: rotate(-4deg);
+        }
+    </style>
+</head>
+<body>
+  <div class="poster">
+    <section class="hero">
+      <div class="script-title">Spring Boot</div>
+      <div class="sub-title">Learning guide for fast onboarding, code reading, and concept review.</div>
+      <div class="badge-row"><span class='mini-badge tone-0'>MARKDOWN</span><span class='mini-badge tone-1'>Core Concepts</span></div>
+      <div class="summary">Learning guide for fast onboarding, code reading, and concept review.</div>
+    </section>
+    <div class="notes">
+      
+            <section class="note-card" style="--note-bg:var(--note-1); --rotate:0.7deg;">
+                <div class="card-tape"></div>
+                <div class="note-kicker">01. Core Concepts</div>
+                <div class="note-title">Core Concepts</div>
+                <div class="note-body">Spring Boot 的核心思想是约定优于配置。通过自动装配机制，把常见工程化配置提前准备好，减少手工 wiring 的负担。</div>
+                <div class="code-card">
+                    <div class="code-top">
+                        <span></span><span></span><span></span>
+                        <em>Annotation</em>
+                    </div>
+                    <div class="code-body">Spring Boot 的核心思想是约定优于配置。通过自动装配机制，把常见工程化配置提前准备好，减少手工 wiring 的负担。</div>
+                </div>
+                <ul class="note-list"><li>@SpringBootApplication</li><li>@EnableAutoConfiguration</li><li>@ComponentScan</li><li>@Configuration</li></ul>
+            </section>
+            
+            <section class="note-card" style="--note-bg:var(--note-2); --rotate:-1.5deg;">
+                <div class="card-tape"></div>
+                <div class="note-kicker">02. Key Features</div>
+                <div class="note-title">Key Features</div>
+                <div class="note-body">内置 starter 体系让依赖和默认配置成组出现，能快速拉起 Web、Data、Actuator 等能力。</div>
+                <div class="code-card">
+                    <div class="code-top">
+                        <span></span><span></span><span></span>
+                        <em>Annotation</em>
+                    </div>
+                    <div class="code-body">内置 starter 体系让依赖和默认配置成组出现，能快速拉起 Web、Data、Actuator 等能力。</div>
+                </div>
+                <ul class="note-list"><li>starter dependencies</li><li>auto configuration</li><li>actuator</li><li>profiles</li></ul>
+            </section>
+            
+            <section class="note-card" style="--note-bg:var(--note-3); --rotate:0.7deg;">
+                <div class="card-tape"></div>
+                <div class="note-kicker">03. Project Structure</div>
+                <div class="note-title">Project Structure</div>
+                <div class="note-body">推荐把入口、配置、业务、基础设施按职责拆开，避免所有代码平铺在一个 package 下。</div>
+                <div class="code-card">
+                    <div class="code-top">
+                        <span></span><span></span><span></span>
+                        <em>Annotation</em>
+                    </div>
+                    <div class="code-body">推荐把入口、配置、业务、基础设施按职责拆开，避免所有代码平铺在一个 package 下。</div>
+                </div>
+                <ul class="note-list"><li>controller</li><li>service</li><li>repository</li><li>config</li></ul>
+            </section>
+            
+            <section class="note-card" style="--note-bg:var(--note-4); --rotate:-1.5deg;">
+                <div class="card-tape"></div>
+                <div class="note-kicker">04. Practical Checklist</div>
+                <div class="note-title">Practical Checklist</div>
+                <div class="note-body">第一次读 Spring Boot 项目时，不要先钻业务细节，先确认：</div>
+                <div class="code-card">
+                    <div class="code-top">
+                        <span></span><span></span><span></span>
+                        <em>Annotation</em>
+                    </div>
+                    <div class="code-body">第一次读 Spring Boot 项目时，不要先钻业务细节，先确认：</div>
+                </div>
+                <ul class="note-list"><li>main class 在哪里</li><li>自动配置生效路径</li><li>profile 切换方式</li><li>配置文件来源</li></ul>
+            </section>
+            
+    </div>
+    <div class="important">Important!</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,295 @@
+# Repository File Structure
+
+Total items: 289
+
+```
+📁 .beads
+📁 .cass
+📄 .gitattributes
+📁 .github
+📄 .gitignore
+📄 .ubsignore
+📄 0
+📄 AGENTS.md
+📄 AGENTS.md.blurb
+📄 AGENT_FRIENDLINESS_REPORT.md
+📄 CHANGELOG.md
+📄 CONTRIBUTING.md
+📄 LICENSE
+📄 PLAN_FOR_CASS_MEMORY_SYSTEM.md
+📄 README.md
+📄 RESEARCH_FINDINGS.md
+📄 SKILL.md
+📄 SUGGESTED_IMPROVEMENTS_TO_CASS_BASED_ON_CMS.md
+📄 bun.lock
+📄 bunfig.toml
+📄 cm_illustration.webp
+📁 competing_proposal_plans
+📁 docs
+📄 gh_og_share_image.png
+📄 install.sh
+📄 package-lock.json
+📄 package.json
+📁 scripts
+📁 src
+📁 test
+📄 tsconfig.ci.json
+📄 tsconfig.json
+📄 types.d.ts
+  📄 .gitignore
+  📄 README.md
+  📄 config.yaml
+  📄 deletions.jsonl.migrated
+  📄 issues.jsonl
+  📄 metadata.json
+  📄 onboard-v2-plan.md
+  📄 playbook.yaml
+  📁 workflows
+  📄 2025-12-07-gemini-gemini_-_direct_access_to_google_ai.md
+  📄 2025-12-07-grok-integrating_cass_into_reflective_workflows_shared_grok_conversation.md
+  📁 claude_version
+  📄 gpt_pro_version.md
+  📄 AGENT_NATIVE_ONBOARDING.md
+  📄 coverage.sh
+  📄 e2e-smoke.sh
+  📄 audit.ts
+  📄 cass.ts
+  📄 cm.ts
+  📁 commands
+  📄 config.ts
+  📄 cost.ts
+  📄 curate.ts
+  📄 diary.ts
+  📄 examples.ts
+  📄 gap-analysis.ts
+  📄 info.ts
+  📄 llm.ts
+  📄 lock.ts
+  📄 onboard-state.ts
+  📄 orchestrator.ts
+  📄 outcome.ts
+  📄 output.ts
+  📄 playbook.ts
+  📄 progress.ts
+  📄 reflect.ts
+  📄 rule-validation.ts
+  📄 sanitize.ts
+  📄 scoring.ts
+  📄 semantic.ts
+  📄 starters.ts
+  📄 tracking.ts
+  📄 trauma.ts
+  📄 trauma_guard_script.ts
+  📄 types.ts
+  📄 utils.ts
+  📄 validate.ts
+  📄 E2E_PLAN.md
+  📄 GAP_ANALYSIS.md
+  📄 ace-pipeline.e2e.test.ts
+  📄 audit.test.ts
+  📄 auto-outcome.test.ts
+  📄 base-url.test.ts
+  📄 blocked-filtering.e2e.test.ts
+  📄 cass-export-fallback.test.ts
+  📄 cass.integration.test.ts
+  📄 cass.test.ts
+  📄 cli-audit.e2e.test.ts
+  📄 cli-command-chains.e2e.test.ts
+  📄 cli-config-cascade.e2e.test.ts
+  📄 cli-context.e2e.test.ts
+  📄 cli-diary.e2e.test.ts
+  📄 cli-doctor.e2e.test.ts
+  📄 cli-forget.e2e.test.ts
+  📄 cli-guard.e2e.test.ts
+  📄 cli-init.e2e.test.ts
+  📄 cli-mark.e2e.test.ts
+  📄 cli-onboard.e2e.test.ts
+  📄 cli-outcome.e2e.test.ts
+  📄 cli-playbook-merge.e2e.test.ts
+  📄 cli-playbook.e2e.test.ts
+  📄 cli-privacy.e2e.test.ts
+  📄 cli-project.e2e.test.ts
+  📄 cli-quickstart.e2e.test.ts
+  📄 cli-reflect.e2e.test.ts
+  📄 cli-serve.e2e.test.ts
+  📄 cli-similar.e2e.test.ts
+  📄 cli-stale.e2e.test.ts
+  📄 cli-starters.e2e.test.ts
+  📄 cli-stats.e2e.test.ts
+  📄 cli-toon-output.e2e.test.ts
+  📄 cli-top.e2e.test.ts
+  📄 cli-trauma.e2e.test.ts
+  📄 cli-undo.e2e.test.ts
+  📄 cli-usage.e2e.test.ts
+  📄 cli-validate.e2e.test.ts
+  📄 cli-version.test.ts
+  📄 cli-why.e2e.test.ts
+  📄 cm.test.ts
+  📄 commands-basic.test.ts
+  📄 concurrency-stress.e2e.test.ts
+  📄 config-security.test.ts
+  📄 config.test.ts
+  📄 context-command.test.ts
+  📄 cost.test.ts
+  📄 curate.test.ts
+  📄 curator-conflicts.test.ts
+  📄 curator-pipeline.integration.test.ts
+  📄 deduplication.property.test.ts
+  📄 diary.fast.test.ts
+  📄 diary.load.test.ts
+  📄 docs.test.ts
+  📄 doctor-command.test.ts
+  📄 doctor-fixes.test.ts
+  📄 doctor-selftest.test.ts
+  📄 e2e-smoke.test.ts
+  📄 e2e-test.sh
+  📄 examples.test.ts
+  📄 extract-bullet-reasoning.test.ts
+  📁 fixtures
+  📄 forget.test.ts
+  📄 format-last-helpful.test.ts
+  📄 gap-analysis.test.ts
+  📁 helpers
+  📄 info.test.ts
+  📄 integration-config-scoring.test.ts
+  📄 integration-s1-offline.test.ts
+  📁 integration
+  📄 learning-loop.e2e.test.ts
+  📄 llm-shim.test.ts
+  📄 llm-with-retry.test.ts
+  📄 llm.mocked.test.ts
+  📄 llm.test.ts
+  📄 lock.test.ts
+  📄 multi-session-learning.e2e.test.ts
+  📄 new-user-onboarding.e2e.test.ts
+  📄 onboard-command.test.ts
+  📄 onboard-state.test.ts
+  📄 orchestrator.test.ts
+  📄 outcome-apply.test.ts
+  📄 outcome-command.test.ts
+  📄 outcome.test.ts
+  📄 output.test.ts
+  📄 performance.e2e.test.ts
+  📄 pipeline-failures.integration.test.ts
+  📄 pipeline.integration.test.ts
+  📄 playbook-export-import.test.ts
+  📄 playbook-get.test.ts
+  📄 playbook.test.ts
+  📄 playbook.unit.test.ts
+  📄 privacy.test.ts
+  📄 progress.test.ts
+  📄 project.test.ts
+  📄 quickstart.test.ts
+  📄 reflect-command.integration.test.ts
+  📄 reflect.integration.test.ts
+  📄 reflect.test.ts
+  📄 repro_schema_strictness.test.ts
+  📄 rule-validation.test.ts
+  📄 sanitize.test.ts
+  📄 sanity-imports.test.ts
+  📄 scoring-decay.e2e.test.ts
+  📄 scoring-decay.test.ts
+  📄 scoring-implicit.test.ts
+  📄 scoring-threshold.test.ts
+  📄 search-anchors.test.ts
+  📄 security.test.ts
+  📄 semantic.cosineSimilarity.test.ts
+  📄 serve-command.test.ts
+  📄 serve-stats.test.ts
+  📄 setup.ts
+  📄 stale.test.ts
+  📄 starters.test.ts
+  📄 team-workflow.e2e.test.ts
+  📄 toon-output.test.ts
+  📄 top.test.ts
+  📄 tracking.processed-log.test.ts
+  📄 tracking.test.ts
+  📄 tracking.usage.test.ts
+  📄 trauma-guard-script.test.ts
+  📄 trauma.test.ts
+  📄 truncateForContext.test.ts
+  📄 types.test.ts
+  📄 undo.test.ts
+  📄 utils.abort.test.ts
+  📄 utils.diary.test.ts
+  📄 utils.error-category.test.ts
+  📄 utils.formatting.test.ts
+  📄 utils.inline-feedback.test.ts
+  📄 utils.lineendings.test.ts
+  📄 utils.normalizeYamlKeys.test.ts
+  📄 utils.path.test.ts
+  📄 utils.permission.test.ts
+  📄 utils.scoring.test.ts
+  📄 utils.shutdown.test.ts
+  📄 utils.string.test.ts
+  📄 utils.validation.test.ts
+  📄 validate-command.test.ts
+  📄 validate.test.ts
+  📄 why.test.ts
+  📄 workflow-first-week.e2e.test.ts
+  📄 workflow-migration.e2e.test.ts
+  📄 workflow-team-onboard.e2e.test.ts
+    📄 ci.yml
+    📄 notify-acfs.yml
+    📄 release.yml
+    📄 AGENTS.md
+    📄 README.md
+    📄 cass-reflect.ts
+    📄 package.json
+    📄 audit.ts
+    📄 context.ts
+    📄 diary.ts
+    📄 doctor.ts
+    📄 forget.ts
+    📄 guard.ts
+    📄 init.ts
+    📄 mark.ts
+    📄 onboard.ts
+    📄 outcome.ts
+    📄 playbook.ts
+    📄 privacy.ts
+    📄 project.ts
+    📄 quickstart.ts
+    📄 reflect.ts
+    📄 serve.ts
+    📄 similar.ts
+    📄 stale.ts
+    📄 starters.ts
+    📄 stats.ts
+    📄 top.ts
+    📄 trauma.ts
+    📄 undo.ts
+    📄 usage.ts
+    📄 validate.ts
+    📄 why.ts
+    📄 README.md
+    📄 config-default.json
+    📄 config-default.yaml
+    📄 diary-failure.json
+    📄 diary-success.json
+    📁 diary
+    📄 playbook-basic.yaml
+    📄 playbook-empty.yaml
+    📄 playbook-sample.yaml
+    📁 playbooks
+    📁 sessions
+    📄 assertions.ts
+    📄 cass-shim.ts
+    📄 cli-runner.ts
+    📄 e2e-logger.ts
+    📄 factories.ts
+    📄 fixtures.ts
+    📄 git.ts
+    📄 index.ts
+    📄 llm-shim.ts
+    📄 logger.ts
+    📄 temp.ts
+    📄 context-outcome.integration.test.ts
+      📄 failure-entry.json
+      📄 mixed-entry.json
+      📄 success-entry.json
+      📄 complex.yaml
+      📄 empty.yaml
+      📄 minimal.yaml
+      📄 sample-session.jsonl
+```

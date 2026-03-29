@@ -1,0 +1,24 @@
+{
+  "name": "claude-mem-poster",
+  "version": "1.0.0",
+  "description": "Multi-theme poster generator for structured content",
+  "main": "capture.js",
+  "scripts": {
+    "poster": "python3 poster_generator.py",
+    "render:test": "python3 poster_generator.py test_report.md --theme research --output ./test-report-poster.png",
+    "render:tech": "python3 poster_generator.py test_report.md --theme technical --output ./test-report-technical.png"
+  },
+  "keywords": [
+    "poster",
+    "infographic",
+    "playwright",
+    "skill",
+    "report"
+  ],
+  "author": "Jerry Hu",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "playwright": "^1.58.2"
+  }
+}
