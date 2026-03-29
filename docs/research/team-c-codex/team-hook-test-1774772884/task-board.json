@@ -1,0 +1,18 @@
+{
+  "tasks": [
+    {
+      "task_id": "T1",
+      "title": "Hook completion propagation",
+      "owner": "reviewer",
+      "status": "completed",
+      "depends_on": [],
+      "deliverable": "reviewer.md",
+      "notes": "Initial note\n[hook] Task T1 completed: Hook completion propagation. Ensure review and artifact updates are not skipped.",
+      "created_at": "2026-03-29T08:28:25.075123+00:00",
+      "updated_at": "2026-03-29T08:28:38.618784+00:00",
+      "plan_status": "not_required",
+      "plan_note": "",
+      "plan_file": ""
+    }
+  ]
+}

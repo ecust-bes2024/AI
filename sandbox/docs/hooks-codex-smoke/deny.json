@@ -1,0 +1,14 @@
+{
+  "ok": false,
+  "decision": "deny",
+  "reason": "Refusing destructive root delete.",
+  "results": [
+    {
+      "ok": false,
+      "decision": "deny",
+      "reason": "Refusing destructive root delete.",
+      "stdout": "{\"ok\": false, \"decision\": \"deny\", \"reason\": \"Refusing destructive root delete.\"}\n",
+      "stderr": ""
+    }
+  ]
+}

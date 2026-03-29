@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "protocol": "team-c",
+  "team_name": "team-hook-test-1774772884",
+  "display_name": "team-hook-test-1774772884",
+  "created_at": "2026-03-29T08:28:12.788476+00:00",
+  "mode": "in-process",
+  "repo_root": "",
+  "lead": {
+    "id": "lead",
+    "role": "team-lead",
+    "state": "active"
+  },
+  "teammates": [
+    {
+      "id": "reviewer",
+      "role": "reviewer",
+      "model": "",
+      "worktree": false,
+      "state": "active",
+      "created_at": "2026-03-29T08:28:12.788406+00:00",
+      "artifact": "reviewer.md",
+      "notes": ""
+    }
+  ],
+  "settings": {
+    "plan_approval_default": false
+  },
+  "cleanup": {
+    "cleaned_at": null
+  }
+}

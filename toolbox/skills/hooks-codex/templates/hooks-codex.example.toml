@@ -1,0 +1,37 @@
+[hooks]
+
+[[hooks.pre_tool_use]]
+type = "command"
+command = ["python3", "/absolute/path/to/pre_tool_use.py"]
+timeout = 5
+
+[hooks.pre_tool_use.matcher]
+tool_name_regex = "^(shell|exec)$"
+
+[[hooks.permission_request]]
+type = "command"
+command = ["python3", "/absolute/path/to/permission_request.py"]
+timeout = 5
+
+[hooks.permission_request.matcher]
+tool_name_regex = "^(shell|exec)$"
+
+[[hooks.task_completed]]
+type = "command"
+command = ["python3", "/absolute/path/to/task_completed.py"]
+timeout = 5
+
+[[hooks.lead_reply]]
+type = "command"
+command = ["python3", "/absolute/path/to/lead_reply.py"]
+timeout = 5
+
+[[hooks.worktree_create]]
+type = "command"
+command = ["python3", "/absolute/path/to/worktree_create.py"]
+timeout = 20
+
+[[hooks.worktree_remove]]
+type = "command"
+command = ["python3", "/absolute/path/to/worktree_remove.py"]
+timeout = 20

@@ -1,0 +1,7 @@
+[hooks]
+[[hooks.pre_tool_use]]
+type = "command"
+command = ["python3", "/Users/jerry_hu/AI/toolbox/skills/hooks-codex/templates/pre_tool_use.py"]
+timeout = 5
+[hooks.pre_tool_use.matcher]
+tool_name_regex = "^(shell|exec)$"

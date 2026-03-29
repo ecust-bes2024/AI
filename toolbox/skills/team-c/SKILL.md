@@ -95,7 +95,8 @@ Use the runtime instead of hand-editing when possible:
 ```bash
 ./scripts/task-board.sh task-add <team-name> "Review auth flow" --owner reviewer --deliverable reviewer.md
 ./scripts/task-board.sh task-update <team-name> T1 --status in_progress
-./scripts/task-board.sh task-claim <team-name> reviewer
+./scripts/task-board.sh task-claim-next <team-name> reviewer
+./scripts/task-board.sh task-claim <team-name> T2 reviewer
 ```
 
 ### 4. Mailbox
@@ -120,8 +121,15 @@ Use the runtime mailbox helpers:
 ```bash
 ./scripts/mailbox.sh mail-send <team-name> --sender lead --recipient reviewer --subject "Clarify finding" --body "Check the token refresh path too."
 ./scripts/mailbox.sh mail-send <team-name> --sender reviewer --recipient architect --subject "Need interface detail" --body "Which adapter owns session rotation?"
+./scripts/mailbox.sh ask-lead <team-name> --sender reviewer --subject "Need approval" --body "Can I widen the task scope?"
+./scripts/mailbox.sh mail-pop <team-name> --recipient lead
+./scripts/mailbox.sh mail-ack <team-name> ACK-1
 ./scripts/mailbox.sh mail-resolve <team-name> M2
 ```
+
+Lead-side handling guidance for `ask-lead` lives in:
+
+- [references/lead-ask-triage.md](references/lead-ask-triage.md)
 
 ### 5. Plan approval
 
@@ -212,8 +220,20 @@ By default it writes a disposable validation run under:
 ### Create a team
 
 ```bash
-./scripts/init-team.sh my-team --lead lead --mode in-process --teammate architect --teammate reviewer --teammate qa --require-plan-approval
+./scripts/init-team.sh my-team --lead lead --mode in-process --teammate architect:architect::true --teammate reviewer --teammate qa --require-plan-approval
 ```
+
+Teammate format:
+
+```text
+role[:id[:model[:worktree]]]
+```
+
+Examples:
+
+- `architect`
+- `reviewer:security-reviewer`
+- `implementer:worker:gpt-5.4-mini:true`
 
 This creates:
 

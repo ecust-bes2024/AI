@@ -31,6 +31,12 @@ else
   print_fail "python3 not found"
 fi
 
+if command -v git >/dev/null 2>&1; then
+  print_ok "git found at $(command -v git)"
+else
+  print_fail "git not found"
+fi
+
 if command -v tmux >/dev/null 2>&1; then
   print_ok "tmux found at $(command -v tmux)"
 else

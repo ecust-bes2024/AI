@@ -8,6 +8,7 @@ import fcntl
 import json
 import os
 import shutil
+import subprocess
 import sys
 import textwrap
 import time
@@ -18,6 +19,7 @@ from typing import Any
 
 
 DEFAULT_BASE = Path("docs") / "research" / "team-c-codex"
+LAB_HOOK_DISPATCH = Path("/Users/jerry_hu/AI/toolbox/skills/hooks-codex/scripts/lab-dispatch.sh")
 VALID_TASK_STATUSES = {"pending", "in_progress", "completed"}
 VALID_PLAN_STATUSES = {"not_required", "required", "requested", "approved", "rejected"}
 ACTIVE_TEAMMATE_STATES = {"active", "planning", "working", "idle"}
@@ -57,6 +59,7 @@ class TeamPaths:
     approvals_dir: Path
     runtime_dir: Path
     logs_dir: Path
+    inbox_cursors_dir: Path
     archive_dir: Path
     lock_file: Path
 
@@ -77,6 +80,7 @@ def resolve_team_dir(base: Path, team_name: str) -> TeamPaths:
         approvals_dir=team_dir / "approvals",
         runtime_dir=team_dir / "runtime",
         logs_dir=team_dir / "runtime" / "logs",
+        inbox_cursors_dir=team_dir / "runtime" / "inbox-cursors",
         archive_dir=team_dir / "archive",
         lock_file=team_dir / ".team.lock",
     )
@@ -86,6 +90,7 @@ def ensure_team_layout(paths: TeamPaths) -> None:
     paths.team_dir.mkdir(parents=True, exist_ok=True)
     paths.approvals_dir.mkdir(parents=True, exist_ok=True)
     paths.logs_dir.mkdir(parents=True, exist_ok=True)
+    paths.inbox_cursors_dir.mkdir(parents=True, exist_ok=True)
     paths.archive_dir.mkdir(parents=True, exist_ok=True)
     paths.lock_file.touch(exist_ok=True)
 
@@ -130,6 +135,18 @@ def read_mailbox(paths: TeamPaths) -> list[dict[str, Any]]:
         if line.strip():
             messages.append(json.loads(line))
     return messages
+
+
+def cursor_file(paths: TeamPaths, consumer: str) -> Path:
+    return paths.inbox_cursors_dir / f"{slugify(consumer)}.json"
+
+
+def read_cursor(paths: TeamPaths, consumer: str) -> dict[str, Any]:
+    return load_json(cursor_file(paths, consumer), {"last_read_index": 0, "acked_tokens": []})
+
+
+def save_cursor(paths: TeamPaths, consumer: str, payload: dict[str, Any]) -> None:
+    dump_json(cursor_file(paths, consumer), payload)
 
 
 def append_mailbox(paths: TeamPaths, message: dict[str, Any]) -> None:
@@ -200,6 +217,8 @@ def render_mailbox(paths: TeamPaths) -> None:
                 f"- recipient: `{message['recipient']}`",
                 f"- sent_at: `{message['sent_at']}`",
                 f"- subject: {message['subject']}",
+                f"- ack_token: `{message['ack_token']}`",
+                f"- kind: `{message.get('kind', 'message')}`",
                 "",
                 message["body"],
                 "",
@@ -262,7 +281,9 @@ def render_dashboard(paths: TeamPaths) -> str:
         "teammates:",
     ]
     for teammate in manifest.get("teammates", []):
-        lines.append(f"- {teammate['id']} role={teammate['role']} state={teammate['state']}")
+        lines.append(
+            f"- {teammate['id']} role={teammate['role']} state={teammate['state']} worktree={teammate.get('worktree', False)}"
+        )
     lines.extend(["", "tasks:"])
     for task in board.get("tasks", []):
         lines.append(
@@ -279,15 +300,116 @@ def log_line(paths: TeamPaths, actor: str, text: str) -> Path:
     return log_path
 
 
+def run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(repo_root), *args],
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+
+
+def dispatch_lab_hook(event: str, payload: dict[str, Any]) -> dict[str, Any]:
+    if not LAB_HOOK_DISPATCH.exists():
+        return {}
+    proc = subprocess.run(
+        [str(LAB_HOOK_DISPATCH), "--event", event, "--payload-json", json.dumps(payload, ensure_ascii=False)],
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    stdout = proc.stdout.strip()
+    if not stdout:
+        raise RuntimeError(f"hooks-codex returned no output for {event}")
+    data = json.loads(stdout)
+    if proc.returncode != 0 or not data.get("ok", False):
+        raise RuntimeError(f"hooks-codex blocked {event}: {data.get('reason') or proc.stderr.strip()}")
+    return data
+
+
+def detect_repo_root(explicit_repo: str | None) -> str:
+    if explicit_repo:
+        repo_root = Path(explicit_repo).expanduser().resolve()
+    else:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            check=False,
+            text=True,
+            capture_output=True,
+        )
+        if result.returncode != 0:
+            return ""
+        repo_root = Path(result.stdout.strip()).resolve()
+    if not repo_root.exists():
+        raise SystemExit(f"Repository root not found: {repo_root}")
+    return str(repo_root)
+
+
+def build_worktree_path(repo_root: Path, team_name: str, teammate_id: str) -> Path:
+    root = repo_root.parent / ".worktrees-codex" / repo_root.name / slugify(team_name)
+    return root / slugify(teammate_id)
+
+
+def create_teammate_worktree(repo_root: Path, team_name: str, teammate: dict[str, Any]) -> None:
+    branch_name = f"{slugify(team_name)}-{teammate['id']}-codex"
+    worktree_path = build_worktree_path(repo_root, team_name, teammate["id"])
+    hook_result = dispatch_lab_hook(
+        "worktree_create",
+        {
+            "hook_event_name": "WorktreeCreate",
+            "name": teammate["id"],
+            "team_name": slugify(team_name),
+            "teammate_name": teammate["id"],
+            "repo_root": str(repo_root),
+            "requested_path": str(worktree_path),
+            "branch_name": branch_name,
+        },
+    )
+    teammate["worktree_path"] = hook_result.get("worktreePath", str(worktree_path))
+    teammate["worktree_branch"] = hook_result.get("branchName", branch_name)
+    teammate["worktree_created"] = True
+    teammate["worktree_managed_by"] = "hooks-codex"
+
+
+def remove_teammate_worktree(repo_root: Path, teammate: dict[str, Any], force: bool) -> None:
+    worktree_path = teammate.get("worktree_path")
+    if not worktree_path:
+        return
+    manager = teammate.get("worktree_managed_by")
+    if manager == "hooks-codex":
+        dispatch_lab_hook(
+            "worktree_remove",
+            {
+                "hook_event_name": "WorktreeRemove",
+                "worktree_path": worktree_path,
+                "repo_root": str(repo_root),
+                "force": force,
+                "teammate_name": teammate["id"],
+            },
+        )
+        return
+    args = ["worktree", "remove"]
+    if force:
+        args.append("--force")
+    args.append(worktree_path)
+    run_git(repo_root, *args)
+
+
+def parse_bool_text(value: str) -> bool:
+    return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
 def parse_teammate_spec(value: str) -> dict[str, Any]:
     parts = [part.strip() for part in value.split(":")]
     role = parts[0]
     teammate_id = parts[1] if len(parts) > 1 and parts[1] else slugify(role)
     model = parts[2] if len(parts) > 2 and parts[2] else ""
+    worktree = parse_bool_text(parts[3]) if len(parts) > 3 and parts[3] else False
     return {
         "id": slugify(teammate_id),
         "role": role,
         "model": model,
+        "worktree": worktree,
         "state": "active",
         "created_at": now_iso(),
         "artifact": f"{slugify(role)}.md",
@@ -303,6 +425,12 @@ def command_init(args: argparse.Namespace) -> int:
 
     ensure_team_layout(paths)
     teammates = [parse_teammate_spec(value) for value in args.teammate]
+    repo_root = detect_repo_root(args.repo) if any(teammate["worktree"] for teammate in teammates) else ""
+    if any(teammate["worktree"] for teammate in teammates) and not repo_root:
+        raise SystemExit(
+            "At least one teammate requested worktree=true, but no git repository root was detected. "
+            "Pass --repo explicitly or run inside a git repo."
+        )
     manifest = {
         "schema_version": 1,
         "protocol": "team-c",
@@ -310,6 +438,7 @@ def command_init(args: argparse.Namespace) -> int:
         "display_name": args.team_name,
         "created_at": now_iso(),
         "mode": args.mode,
+        "repo_root": repo_root,
         "lead": {
             "id": slugify(args.lead),
             "role": "team-lead",
@@ -323,6 +452,22 @@ def command_init(args: argparse.Namespace) -> int:
             "cleaned_at": None,
         },
     }
+
+    if repo_root:
+        repo_path = Path(repo_root)
+        try:
+            for teammate in teammates:
+                if teammate["worktree"]:
+                    create_teammate_worktree(repo_path, manifest["team_name"], teammate)
+        except Exception:
+            for teammate in teammates:
+                if teammate.get("worktree_created"):
+                    try:
+                        remove_teammate_worktree(repo_path, teammate, force=True)
+                    except Exception:
+                        pass
+            raise
+
     board = {"tasks": []}
     save_manifest(paths, manifest)
     save_task_board(paths, board)
@@ -339,6 +484,8 @@ def command_init(args: argparse.Namespace) -> int:
                 - role: `{teammate['role']}`
                 - state: `{teammate['state']}`
                 - model: `{teammate['model'] or '-'}`
+                - worktree: `{teammate['worktree']}`
+                - worktree_path: `{teammate.get('worktree_path', '-')}`
 
                 ## Deliverable
 
@@ -388,12 +535,29 @@ def command_task_update(args: argparse.Namespace) -> int:
         board = load_task_board(paths)
         manifest = load_manifest(paths)
         task = find_task(board, args.task_id)
+        previous_status = task["status"]
         if args.owner is not None:
             task["owner"] = slugify(args.owner) if args.owner else ""
             if task["owner"]:
                 find_teammate(manifest, task["owner"])
         if args.status:
             validate_status(args.status, VALID_TASK_STATUSES, "task status")
+            if args.status == "completed" and previous_status != "completed":
+                hook_result = dispatch_lab_hook(
+                    "task_completed",
+                    {
+                        "hook_event_name": "TaskCompleted",
+                        "task_id": task["task_id"],
+                        "task_subject": task["title"],
+                        "task_description": task.get("notes", ""),
+                        "team_name": manifest["team_name"],
+                        "teammate_name": task.get("owner", ""),
+                    },
+                )
+                if hook_result.get("additionalContext"):
+                    existing_notes = task.get("notes", "")
+                    addition = f"[hook] {hook_result['additionalContext']}"
+                    task["notes"] = f"{existing_notes}\n{addition}".strip()
             task["status"] = args.status
         if args.notes is not None:
             task["notes"] = args.notes
@@ -405,6 +569,28 @@ def command_task_update(args: argparse.Namespace) -> int:
 
 
 def command_task_claim(args: argparse.Namespace) -> int:
+    paths = resolve_team_dir(Path(args.base), args.team_name)
+    with team_lock(paths):
+        board = load_task_board(paths)
+        manifest = load_manifest(paths)
+        teammate = find_teammate(manifest, slugify(args.teammate))
+        task = find_task(board, args.task_id)
+        blockers = [dep for dep in task.get("depends_on", []) if find_task(board, dep)["status"] != "completed"]
+        if blockers:
+            raise SystemExit(f"Task {task['task_id']} is blocked by: {', '.join(blockers)}")
+        if task["status"] != "pending":
+            raise SystemExit(f"Task {task['task_id']} is not pending.")
+        if task.get("owner") and task["owner"] != teammate["id"]:
+            raise SystemExit(f"Task {task['task_id']} is already owned by {task['owner']}.")
+        task["owner"] = teammate["id"]
+        task["status"] = "in_progress"
+        task["updated_at"] = now_iso()
+        save_task_board(paths, board)
+    print(task["task_id"])
+    return 0
+
+
+def command_task_claim_next(args: argparse.Namespace) -> int:
     paths = resolve_team_dir(Path(args.base), args.team_name)
     with team_lock(paths):
         board = load_task_board(paths)
@@ -490,9 +676,114 @@ def command_mailbox_send(args: argparse.Namespace) -> int:
                     "body": args.body,
                     "sent_at": now_iso(),
                     "status": "open",
+                    "ack_token": f"ACK-{next_id}",
+                    "kind": getattr(args, "kind", "message"),
                 },
             )
             next_id += 1
+    return 0
+
+
+def command_ask_lead(args: argparse.Namespace) -> int:
+    args.recipient = "lead"
+    args.kind = "ask_lead"
+    return command_mailbox_send(args)
+
+
+def command_reply_lead(args: argparse.Namespace) -> int:
+    paths = resolve_team_dir(Path(args.base), args.team_name)
+    with team_lock(paths):
+        manifest = load_manifest(paths)
+        recipient = slugify(args.recipient)
+        find_teammate(manifest, recipient)
+        hook_result = dispatch_lab_hook(
+            "lead_reply",
+            {
+                "hook_event_name": "LeadReply",
+                "team_name": manifest["team_name"],
+                "sender": manifest["lead"]["id"],
+                "recipient": recipient,
+                "subject": args.subject,
+                "body": args.body,
+            },
+        )
+        existing = read_mailbox(paths)
+        next_id = len(existing) + 1
+        append_mailbox(
+            paths,
+            {
+                "message_id": f"M{next_id}",
+                "sender": manifest["lead"]["id"],
+                "recipient": recipient,
+                "subject": args.subject,
+                "body": args.body,
+                "sent_at": now_iso(),
+                "status": "open",
+                "ack_token": f"ACK-{next_id}",
+                "kind": "lead_reply",
+            },
+        )
+        if hook_result.get("additionalContext"):
+            note = f"[lead_reply hook] {hook_result['additionalContext']}"
+            summary = paths.summary_md.read_text(encoding="utf-8") if paths.summary_md.exists() else "# Lead Summary\n\n"
+            if note not in summary:
+                paths.summary_md.write_text(summary.rstrip() + f"\n\n## Lead Reply Notes\n\n- {note}\n", encoding="utf-8")
+    return 0
+
+
+def command_mailbox_pop(args: argparse.Namespace) -> int:
+    paths = resolve_team_dir(Path(args.base), args.team_name)
+    with team_lock(paths):
+        manifest = load_manifest(paths)
+        consumer = slugify(args.recipient)
+        if consumer != manifest["lead"]["id"]:
+            find_teammate(manifest, consumer)
+        messages = read_mailbox(paths)
+        cursor = read_cursor(paths, consumer)
+        last_read_index = int(cursor.get("last_read_index", 0))
+        pending = []
+        for index, message in enumerate(messages[last_read_index:], start=last_read_index):
+            if message["recipient"] != consumer:
+                continue
+            if message["status"] not in {"open", "acked"}:
+                continue
+            pending.append(
+                {
+                    "message_id": message["message_id"],
+                    "sender": message["sender"],
+                    "recipient": message["recipient"],
+                    "subject": message["subject"],
+                    "body": message["body"],
+                    "sent_at": message["sent_at"],
+                    "status": message["status"],
+                    "ack_token": message["ack_token"],
+                    "kind": message.get("kind", "message"),
+                    "index": index,
+                }
+            )
+            if len(pending) >= args.limit:
+                break
+        if pending:
+            cursor["last_read_index"] = max(item["index"] for item in pending) + 1
+            save_cursor(paths, consumer, cursor)
+    print(json.dumps({"messages": pending}, ensure_ascii=False, indent=2))
+    return 0
+
+
+def command_mailbox_ack(args: argparse.Namespace) -> int:
+    paths = resolve_team_dir(Path(args.base), args.team_name)
+    with team_lock(paths):
+        messages = read_mailbox(paths)
+        acked = []
+        for token in args.ack_token:
+            for message in messages:
+                if message["ack_token"] == token:
+                    message["status"] = "acked"
+                    message["acked_at"] = now_iso()
+                    acked.append(token)
+                    break
+        save_mailbox(paths, messages)
+    print(json.dumps({"acked_tokens": acked}, ensure_ascii=False, indent=2))
     return 0
 
 
@@ -548,6 +839,13 @@ def command_cleanup(args: argparse.Namespace) -> int:
         active = [member["id"] for member in manifest.get("teammates", []) if member["state"] not in STOPPED_TEAMMATE_STATES]
         if active and not args.force:
             raise SystemExit(f"Cleanup blocked. Active teammates: {', '.join(active)}")
+        repo_root = manifest.get("repo_root", "")
+        if repo_root:
+            repo_path = Path(repo_root)
+            for teammate in manifest.get("teammates", []):
+                if teammate.get("worktree_created") and teammate.get("worktree_path"):
+                    remove_teammate_worktree(repo_path, teammate, force=args.force)
+                    teammate["worktree_removed_at"] = now_iso()
         manifest["cleanup"]["cleaned_at"] = now_iso()
         save_manifest(paths, manifest)
     archive_note = paths.archive_dir / f"cleanup-{int(time.time())}.md"
@@ -568,7 +866,8 @@ def build_parser() -> argparse.ArgumentParser:
     init_parser.add_argument("team_name")
     init_parser.add_argument("--lead", default="lead")
     init_parser.add_argument("--mode", default="in-process", choices=["in-process", "split-panes", "auto"])
-    init_parser.add_argument("--teammate", action="append", default=[], help="role[:id[:model]]")
+    init_parser.add_argument("--teammate", action="append", default=[], help="role[:id[:model[:worktree]]]")
+    init_parser.add_argument("--repo", default="", help="Optional git repository root used when any teammate sets worktree=true")
     init_parser.add_argument("--require-plan-approval", action="store_true")
     init_parser.add_argument("--force", action="store_true")
     init_parser.set_defaults(handler=command_init)
@@ -594,8 +893,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     claim_parser = subparsers.add_parser("task-claim")
     claim_parser.add_argument("team_name")
+    claim_parser.add_argument("task_id")
     claim_parser.add_argument("teammate")
     claim_parser.set_defaults(handler=command_task_claim)
+
+    claim_next_parser = subparsers.add_parser("task-claim-next")
+    claim_next_parser.add_argument("team_name")
+    claim_next_parser.add_argument("teammate")
+    claim_next_parser.set_defaults(handler=command_task_claim_next)
 
     plan_request_parser = subparsers.add_parser("plan-request")
     plan_request_parser.add_argument("team_name")
@@ -622,12 +927,38 @@ def build_parser() -> argparse.ArgumentParser:
     send_parser.add_argument("--recipient", required=True, help="teammate id, lead, or broadcast")
     send_parser.add_argument("--subject", required=True)
     send_parser.add_argument("--body", required=True)
+    send_parser.set_defaults(kind="message")
     send_parser.set_defaults(handler=command_mailbox_send)
+
+    ask_lead_parser = subparsers.add_parser("ask-lead")
+    ask_lead_parser.add_argument("team_name")
+    ask_lead_parser.add_argument("--sender", required=True)
+    ask_lead_parser.add_argument("--subject", required=True)
+    ask_lead_parser.add_argument("--body", required=True)
+    ask_lead_parser.set_defaults(handler=command_ask_lead)
+
+    reply_lead_parser = subparsers.add_parser("reply-lead")
+    reply_lead_parser.add_argument("team_name")
+    reply_lead_parser.add_argument("--recipient", required=True)
+    reply_lead_parser.add_argument("--subject", required=True)
+    reply_lead_parser.add_argument("--body", required=True)
+    reply_lead_parser.set_defaults(handler=command_reply_lead)
 
     resolve_parser = subparsers.add_parser("mail-resolve")
     resolve_parser.add_argument("team_name")
     resolve_parser.add_argument("message_id")
     resolve_parser.set_defaults(handler=command_mailbox_resolve)
+
+    pop_parser = subparsers.add_parser("mail-pop")
+    pop_parser.add_argument("team_name")
+    pop_parser.add_argument("--recipient", required=True)
+    pop_parser.add_argument("--limit", type=int, default=20)
+    pop_parser.set_defaults(handler=command_mailbox_pop)
+
+    ack_parser = subparsers.add_parser("mail-ack")
+    ack_parser.add_argument("team_name")
+    ack_parser.add_argument("ack_token", nargs="+")
+    ack_parser.set_defaults(handler=command_mailbox_ack)
 
     status_parser = subparsers.add_parser("status")
     status_parser.add_argument("team_name")

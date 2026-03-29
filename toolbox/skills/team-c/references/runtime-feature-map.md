@@ -11,6 +11,10 @@ This file maps Claude `agent teams` semantics to the current `team-c` runtime.
 | cleanup semantics | `cleanup` command, blocked while teammates are active |
 | in-process display | `display.py watch` dashboard |
 | split panes | `start-split-panes.sh` using tmux |
+| claim next | `task-claim-next` |
+| ask lead | `ask-lead` |
+| inbox cursor / ack | `mail-pop` + `mail-ack` |
+| teammate worktree metadata | teammate spec `role[:id[:model[:worktree]]]` |
 
 ## Important limitation
 

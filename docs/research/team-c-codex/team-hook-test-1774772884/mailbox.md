@@ -1,0 +1,3 @@
+# Mailbox
+
+No messages.

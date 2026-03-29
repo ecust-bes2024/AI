@@ -1,0 +1,2 @@
+{"message_id": "M1", "sender": "reviewer", "recipient": "lead", "subject": "Need approval", "body": "Can I widen the task scope?", "sent_at": "2026-03-29T08:48:22.211481+00:00", "status": "open", "ack_token": "ACK-1", "kind": "ask_lead"}
+{"message_id": "M2", "sender": "lead", "recipient": "reviewer", "subject": "Scope approved", "body": "You may widen the task to include retry logic.", "sent_at": "2026-03-29T08:48:22.292840+00:00", "status": "open", "ack_token": "ACK-2", "kind": "lead_reply"}

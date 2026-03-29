@@ -1,0 +1,14 @@
+{
+  "ok": false,
+  "decision": "ask",
+  "reason": "Force push requires explicit review.",
+  "results": [
+    {
+      "ok": false,
+      "decision": "ask",
+      "reason": "Force push requires explicit review.",
+      "stdout": "{\"ok\": false, \"decision\": \"ask\", \"reason\": \"Force push requires explicit review.\"}\n",
+      "stderr": ""
+    }
+  ]
+}
