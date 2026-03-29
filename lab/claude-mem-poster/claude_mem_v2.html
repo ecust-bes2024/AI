@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>claude-mem 调研报告</title>
+    <style>
+        :root {
+            --paper: #fbf6ec;
+            --paper-2: #fffaf2;
+            --ink: #2a241f;
+            --muted: #72675c;
+            --ink-soft: #4b4034;
+            --line: #e9dec9;
+            --bg: #efe6d7;
+            --bg-2: #e7dcc8;
+            --shadow: 0 10px 30px rgba(92, 74, 48, 0.10);
+            --orange: #f0a24b;
+            --blue: #7db2ff;
+            --green: #93d6b1;
+            --purple: #b9a3ef;
+            --pink: #efb5ce;
+            --yellow: #f3d88d;
+            --orange-ink: #a25f1b;
+            --blue-ink: #436cae;
+            --green-ink: #3f7d5c;
+            --purple-ink: #6f5ba7;
+            --rose-ink: #a45e7b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(255,255,255,0.45), transparent 26%),
+                linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+            color: var(--ink);
+            padding: 22px 0 36px;
+            line-height: 1.55;
+        }
+
+        .poster {
+            width: 820px;
+            margin: 0 auto;
+            padding: 0 14px;
+        }
+
+        .section {
+            margin-bottom: 16px;
+        }
+
+        .section-heading {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin: 0 0 10px;
+            color: #312a23;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-heading::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(182, 156, 115, 0.42), transparent);
+        }
+
+        .section-heading.warm { color: var(--orange-ink); }
+        .section-heading.blue { color: var(--blue-ink); }
+        .section-heading.green { color: var(--green-ink); }
+        .section-heading.purple { color: var(--purple-ink); }
+        .section-heading.rose { color: var(--rose-ink); }
+
+        .tone-orange { color: var(--orange-ink); }
+        .tone-blue { color: var(--blue-ink); }
+        .tone-green { color: var(--green-ink); }
+        .tone-purple { color: var(--purple-ink); }
+        .tone-rose { color: var(--rose-ink); }
+
+        .emph {
+            font-weight: 800;
+        }
+
+        .emph.orange { color: var(--orange-ink); }
+        .emph.blue { color: var(--blue-ink); }
+        .emph.green { color: var(--green-ink); }
+        .emph.purple { color: var(--purple-ink); }
+        .emph.rose { color: var(--rose-ink); }
+
+        code {
+            color: var(--orange-ink);
+            background: rgba(240, 162, 75, 0.10);
+            padding: 1px 5px;
+            border-radius: 5px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        }
+
+        .section-kicker {
+            font-size: 11px;
+            color: #9a8f80;
+            margin-bottom: 2px;
+        }
+
+        .paper {
+            position: relative;
+            background: linear-gradient(180deg, var(--paper) 0%, #f8f1e4 100%);
+            border: 1px solid rgba(193, 173, 142, 0.35);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .paper::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.38), transparent 20%),
+                radial-gradient(circle at top right, rgba(255,255,255,0.26), transparent 24%);
+            pointer-events: none;
+        }
+
+        .hero {
+            padding: 22px 20px 16px;
+        }
+
+        .tape {
+            position: absolute;
+            top: -8px;
+            width: 84px;
+            height: 28px;
+            background: rgba(243, 218, 167, 0.74);
+            border: 1px solid rgba(222, 189, 120, 0.28);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset;
+        }
+
+        .tape.left {
+            left: 22px;
+            transform: rotate(-6deg);
+        }
+
+        .tape.right {
+            right: 24px;
+            transform: rotate(8deg);
+        }
+
+        .hero-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #5e554b;
+            background: rgba(255,255,255,0.7);
+            border: 1px solid rgba(202, 184, 152, 0.45);
+        }
+
+        .hero-tag:nth-child(1) {
+            color: var(--orange-ink);
+            background: rgba(240, 162, 75, 0.12);
+        }
+
+        .hero-tag:nth-child(2) {
+            color: var(--blue-ink);
+            background: rgba(125, 178, 255, 0.12);
+        }
+
+        .hero-tag:nth-child(3) {
+            color: var(--green-ink);
+            background: rgba(147, 214, 177, 0.12);
+        }
+
+        .hero-title {
+            font-size: 47px;
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -0.05em;
+            margin-bottom: 8px;
+        }
+
+        .hero-title .hero-main {
+            color: #241f1a;
+        }
+
+        .hero-title .hero-accent {
+            color: var(--blue-ink);
+        }
+
+        .hero-subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle .sep {
+            color: #b0a08c;
+            padding: 0 4px;
+        }
+
+        .hero-intro {
+            font-size: 13px;
+            color: var(--ink-soft);
+            line-height: 1.72;
+            margin-bottom: 14px;
+        }
+
+        .meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 11px;
+            color: #7e7265;
+            margin-bottom: 14px;
+        }
+
+        .meta-pill {
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.65);
+            border: 1px solid rgba(198, 177, 143, 0.4);
+        }
+
+        .summary-grid,
+        .metrics-grid,
+        .insight-grid,
+        .evidence-grid,
+        .decision-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .summary-card,
+        .metric-card,
+        .timeline-card,
+        .insight-card,
+        .evidence-card,
+        .decision-card,
+        .closing-card {
+            position: relative;
+            background: rgba(255,255,255,0.72);
+            border: 1px solid rgba(206, 186, 151, 0.44);
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(104, 84, 56, 0.06);
+            overflow: hidden;
+        }
+
+        .summary-card {
+            padding: 12px 12px 14px;
+            min-height: 94px;
+        }
+
+        .summary-card::after,
+        .insight-card::after,
+        .decision-card::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+        }
+
+        .summary-card:nth-child(1)::after,
+        .insight-card.orange::after,
+        .decision-card.orange::after { background: var(--orange); }
+        .summary-card:nth-child(2)::after,
+        .insight-card.blue::after,
+        .decision-card.blue::after { background: var(--blue); }
+        .summary-card:nth-child(3)::after,
+        .insight-card.green::after,
+        .decision-card.green::after { background: var(--green); }
+        .summary-card:nth-child(4)::after,
+        .insight-card.purple::after,
+        .decision-card.purple::after { background: var(--purple); }
+
+        .summary-label {
+            font-size: 10px;
+            color: #978a7a;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .summary-title {
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.35;
+            margin-bottom: 6px;
+        }
+
+        .summary-card:nth-child(1) .summary-title { color: var(--orange-ink); }
+        .summary-card:nth-child(2) .summary-title { color: var(--blue-ink); }
+        .summary-card:nth-child(3) .summary-title { color: var(--green-ink); }
+        .summary-card:nth-child(4) .summary-title { color: var(--purple-ink); }
+
+        .summary-text {
+            font-size: 11px;
+            color: #6d6156;
+            line-height: 1.6;
+        }
+
+        .metrics-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .metric-card {
+            padding: 14px 12px 12px;
+            min-height: 120px;
+        }
+
+        .metric-index {
+            font-size: 10px;
+            color: #9c907f;
+            margin-bottom: 10px;
+        }
+
+        .metric-value {
+            font-size: 41px;
+            font-weight: 900;
+            letter-spacing: -0.05em;
+            line-height: 0.95;
+            margin-bottom: 6px;
+        }
+
+        .metric-card:nth-child(1) .metric-value,
+        .metric-card:nth-child(1) .metric-label { color: var(--orange-ink); }
+        .metric-card:nth-child(2) .metric-value,
+        .metric-card:nth-child(2) .metric-label { color: var(--blue-ink); }
+        .metric-card:nth-child(3) .metric-value,
+        .metric-card:nth-child(3) .metric-label { color: var(--green-ink); }
+        .metric-card:nth-child(4) .metric-value,
+        .metric-card:nth-child(4) .metric-label { color: var(--purple-ink); }
+
+        .metric-label {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .metric-note {
+            font-size: 11px;
+            color: #786c61;
+            line-height: 1.55;
+        }
+
+        .timeline-wrap {
+            padding: 16px 14px 12px;
+        }
+
+        .timeline-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .timeline-card {
+            padding: 14px 14px 16px;
+            min-height: 174px;
+        }
+
+        .timeline-version {
+            font-size: 10px;
+            font-weight: 800;
+            color: #9d7d44;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .timeline-title {
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 10px;
+        }
+
+        .timeline-card:nth-child(1) .timeline-title { color: var(--orange-ink); }
+        .timeline-card:nth-child(2) .timeline-title { color: var(--blue-ink); }
+        .timeline-card:nth-child(3) .timeline-title { color: var(--rose-ink); }
+        .timeline-card:nth-child(4) .timeline-title { color: var(--purple-ink); }
+
+        .timeline-body {
+            font-size: 12px;
+            color: #62574b;
+            line-height: 1.75;
+        }
+
+        .timeline-points {
+            margin-top: 10px;
+            padding-left: 16px;
+            color: #5d5347;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .insight-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .insight-card,
+        .decision-card {
+            padding: 14px 14px 16px;
+            min-height: 194px;
+        }
+
+        .insight-card.orange { background: linear-gradient(180deg, #f6ecd1 0%, #fdf9ef 100%); }
+        .insight-card.blue { background: linear-gradient(180deg, #e5f2fa 0%, #fafcff 100%); }
+        .insight-card.green { background: linear-gradient(180deg, #e6f4eb 0%, #fbfffd 100%); }
+        .insight-card.purple { background: linear-gradient(180deg, #ece7fb 0%, #fdfcff 100%); }
+        .decision-card.orange { background: linear-gradient(180deg, #f8edd5 0%, #fff9f0 100%); }
+        .decision-card.blue { background: linear-gradient(180deg, #e7f0fb 0%, #fbfdff 100%); }
+        .decision-card.green { background: linear-gradient(180deg, #e7f6ef 0%, #fbfffd 100%); }
+        .decision-card.purple { background: linear-gradient(180deg, #f0ebfb 0%, #fdfcff 100%); }
+
+        .card-kicker {
+            font-size: 10px;
+            color: #9f9385;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            margin-bottom: 8px;
+        }
+
+        .card-headline {
+            font-size: 16px;
+            font-weight: 850;
+            line-height: 1.3;
+            margin-bottom: 10px;
+        }
+
+        .insight-card.orange .card-headline,
+        .decision-card.orange .card-headline { color: var(--orange-ink); }
+        .insight-card.blue .card-headline,
+        .decision-card.blue .card-headline { color: var(--blue-ink); }
+        .insight-card.green .card-headline,
+        .decision-card.green .card-headline { color: var(--green-ink); }
+        .insight-card.purple .card-headline,
+        .decision-card.purple .card-headline { color: var(--purple-ink); }
+
+        .card-copy {
+            font-size: 12px;
+            color: #605549;
+            line-height: 1.72;
+        }
+
+        .card-list {
+            margin-top: 10px;
+            padding-left: 16px;
+            font-size: 11px;
+            color: #605549;
+            line-height: 1.72;
+        }
+
+        .evidence-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .evidence-card {
+            padding: 12px 12px 14px;
+        }
+
+        .evidence-shot {
+            height: 150px;
+            border-radius: 12px;
+            border: 1px solid rgba(202, 183, 149, 0.45);
+            overflow: hidden;
+            margin-bottom: 10px;
+            position: relative;
+            background: #191919;
+        }
+
+        .evidence-shot.light {
+            background: linear-gradient(180deg, #fcfdff 0%, #eff3f8 100%);
+        }
+
+        .shot-bar {
+            height: 22px;
+            background: rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0 10px;
+        }
+
+        .light .shot-bar {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.28);
+        }
+
+        .light .dot {
+            background: rgba(68,78,92,0.22);
+        }
+
+        .shot-content {
+            padding: 12px;
+            height: calc(100% - 22px);
+            position: relative;
+        }
+
+        .line {
+            height: 7px;
+            border-radius: 999px;
+            margin-bottom: 8px;
+        }
+
+        .dark .line { background: rgba(255,255,255,0.12); }
+        .light .line { background: rgba(37, 52, 74, 0.10); }
+        .line.orange { background: linear-gradient(90deg, #ffb45c, #f07e2f); }
+        .line.blue { background: linear-gradient(90deg, #aac8ff, #6d87ff); }
+        .line.green { background: linear-gradient(90deg, #a4e7be, #57b47f); }
+        .line.short { width: 34%; }
+        .line.mid { width: 52%; }
+        .line.long { width: 86%; }
+
+        .chart {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 12px;
+            height: 54px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.03), transparent),
+                linear-gradient(90deg, transparent 0 12%, rgba(255,255,255,0.05) 12% 13%, transparent 13% 25%, rgba(255,255,255,0.05) 25% 26%, transparent 26%);
+        }
+
+        .chart::after {
+            content: "";
+            position: absolute;
+            left: 8px;
+            right: 8px;
+            bottom: 10px;
+            height: 2px;
+            background: linear-gradient(90deg, #f29632 0%, #f29632 55%, #7e5fff 100%);
+            transform: skewX(-28deg);
+            box-shadow: 0 0 10px rgba(242, 150, 50, 0.28);
+        }
+
+        .mini-metrics {
+            display: grid;
+            grid-template-columns: 1.1fr .9fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .mini-metric {
+            border-radius: 10px;
+            background: rgba(108, 124, 151, 0.08);
+            padding: 10px;
+        }
+
+        .mini-value {
+            font-size: 28px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 5px;
+            color: #3448a5;
+        }
+
+        .mini-label {
+            font-size: 11px;
+            color: #63718a;
+            line-height: 1.5;
+        }
+
+        .terminal-block {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 12px;
+            border-radius: 10px;
+            background: rgba(8, 8, 8, 0.42);
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .terminal-row {
+            font-size: 10px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            color: #d7d7d7;
+            margin-bottom: 5px;
+            white-space: nowrap;
+        }
+
+        .terminal-row:last-child { margin-bottom: 0; }
+        .terminal-row.accent { color: #f0a24b; }
+        .terminal-row.blue { color: #8ca9ff; }
+
+        .decision-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .closing-card {
+            padding: 14px 15px;
+            font-size: 12px;
+            color: #63584d;
+            line-height: 1.75;
+        }
+
+        .closing-card strong {
+            color: var(--orange-ink);
+            font-size: 12px;
+            letter-spacing: 0.04em;
+        }
+
+        .footer {
+            text-align: left;
+            color: #8b7f72;
+            font-size: 10px;
+            line-height: 1.8;
+            padding: 8px 4px 0;
+            letter-spacing: 0.04em;
+        }
+
+        .footer-rule {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(138, 119, 92, 0.4), transparent);
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <section class="section">
+            <div class="paper hero">
+                <span class="tape left"></span>
+                <span class="tape right"></span>
+
+                <div class="hero-tags">
+                    <span class="hero-tag">AIDE 调研</span>
+                    <span class="hero-tag">Claude Code Plugin</span>
+                    <span class="hero-tag">Memory System</span>
+                </div>
+
+                <h1 class="hero-title"><span class="hero-main">claude-</span><span class="hero-accent">mem</span> <span class="hero-main">调研报告</span></h1>
+                <div class="hero-subtitle">持久化内存压缩系统 <span class="sep">·</span> <span class="tone-blue">v10.6.2</span> <span class="sep">·</span> <span class="tone-orange">40.7K stars</span></div>
+                <p class="hero-intro">
+                    这是一个围绕 Claude Code 长期记忆构建的自动化系统。它用 <span class="emph blue">hooks</span> 捕获工具调用、文件改动与决策，
+                    再通过 <span class="emph green">AI 压缩</span> 为可检索记忆，并在后续对话阶段自动注入相关上下文。
+                </p>
+
+                <div class="meta-row">
+                    <span class="meta-pill">调研日期：2026-03-26</span>
+                    <span class="meta-pill">预处理：Skill Seekers</span>
+                    <span class="meta-pill">定位：自动记忆 + 历史检索</span>
+                    <span class="meta-pill">结论：值得学，不必整套照搬</span>
+                </div>
+
+                <div class="summary-grid">
+                    <article class="summary-card">
+                        <div class="summary-label">核心判断</div>
+                        <div class="summary-title">架构思路先进，但实现偏重</div>
+                        <div class="summary-text">适合研究 hooks + prompt 注入思路，不适合原样搬到现有体系。</div>
+                    </article>
+                    <article class="summary-card">
+                        <div class="summary-label">最大价值</div>
+                        <div class="summary-title">自动捕获观察并压缩成记忆</div>
+                        <div class="summary-text">真正有价值的是 observation 模型和注入策略，而不是整套运行时。</div>
+                    </article>
+                    <article class="summary-card">
+                        <div class="summary-label">主要代价</div>
+                        <div class="summary-title">运行时复杂度和 token 成本</div>
+                        <div class="summary-text">Bun、daemon、向量库与热会话管理，都会拉高系统维护成本。</div>
+                    </article>
+                    <article class="summary-card">
+                        <div class="summary-label">建议动作</div>
+                        <div class="summary-title">只抽取关键设计，不整体迁移</div>
+                        <div class="summary-text">优先沉淀 prompt 注入、缓存、选择性召回这三块能力。</div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading warm">核心数据</div>
+            <div class="metrics-grid">
+                <article class="metric-card">
+                    <div class="metric-index">01</div>
+                    <div class="metric-value">40.7K</div>
+                    <div class="metric-label">GitHub Stars</div>
+                    <div class="metric-note">社区热度很高，证明这类“长记忆”需求有真实市场。</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-index">02</div>
+                    <div class="metric-value">v10.6.2</div>
+                    <div class="metric-label">最新版本</div>
+                    <div class="metric-note">版本演进快，说明功能仍在快速迭代，接口稳定性一般。</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-index">03</div>
+                    <div class="metric-value">53%</div>
+                    <div class="metric-label">Token 压缩率</div>
+                    <div class="metric-note">压缩效果明确，是它最能打动人的指标之一。</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-index">04</div>
+                    <div class="metric-value">2540+</div>
+                    <div class="metric-label">测试覆盖</div>
+                    <div class="metric-note">说明项目工程化程度不错，不是单纯概念验证。</div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading blue">主线时间轴</div>
+            <div class="paper timeline-wrap">
+                <div class="timeline-grid">
+                    <article class="timeline-card">
+                        <div class="timeline-version">v10.6.0</div>
+                        <div class="timeline-title">System Prompt 注入架构成型</div>
+                        <div class="timeline-body">
+                            使用 <code>before_prompt_build</code> hook，把记忆直接拼接进系统上下文，
+                            从“写文件给模型读”切换成“运行时注入”。
+                        </div>
+                        <ul class="timeline-points">
+                            <li>减少 MEMORY.md 干预感</li>
+                            <li>用户控制权更完整</li>
+                            <li>更适合选择性召回</li>
+                        </ul>
+                    </article>
+
+                    <article class="timeline-card">
+                        <div class="timeline-version">v10.6.1</div>
+                        <div class="timeline-title">AI 压缩策略成熟</div>
+                        <div class="timeline-body">
+                            基于 observation 的摘要压缩进入稳定阶段，官方给出约 53% token 节省，
+                            让长期记忆从“能做”变成“值得做”。
+                        </div>
+                        <ul class="timeline-points">
+                            <li>召回更轻量</li>
+                            <li>历史上下文密度更高</li>
+                            <li>成本收益比明显改善</li>
+                        </ul>
+                    </article>
+
+                    <article class="timeline-card">
+                        <div class="timeline-version">v10.6.2</div>
+                        <div class="timeline-title">稳定性与运行时问题暴露</div>
+                        <div class="timeline-body">
+                            daemon 管理、版本匹配和会话争用等问题开始出现，说明系统越自动化，
+                            运行时治理越重要。
+                        </div>
+                        <ul class="timeline-points">
+                            <li>热会话抢占资源</li>
+                            <li>版本不匹配会直接炸 worker</li>
+                            <li>跨平台表现不一致</li>
+                        </ul>
+                    </article>
+
+                    <article class="timeline-card">
+                        <div class="timeline-version">takeaway</div>
+                        <div class="timeline-title">最适合学的是方法，不是形态</div>
+                        <div class="timeline-body">
+                            真正值得迁移的是 observation schema、注入时机、缓存策略和排噪能力；
+                            Web UI、daemon 和 Bun 则未必是当前阶段的最佳投资。
+                        </div>
+                        <ul class="timeline-points">
+                            <li>保留核心机制</li>
+                            <li>避免重复基础设施</li>
+                            <li>减少系统耦合度</li>
+                        </ul>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading green">三张主牌</div>
+            <div class="insight-grid">
+                <article class="insight-card orange">
+                    <div class="card-kicker">01 / Architecture</div>
+                    <div class="card-headline">最值得抄的是 Prompt 注入</div>
+                    <div class="card-copy">
+                        这套方案把长期记忆作为系统上下文的运行时输入，而不是用户侧文件。
+                        这样做更干净，也更容易做选择性控制。
+                    </div>
+                    <ul class="card-list">
+                        <li>不污染工作目录</li>
+                        <li>召回逻辑更可控</li>
+                        <li>适合和现有 memory 后端结合</li>
+                    </ul>
+                </article>
+
+                <article class="insight-card green">
+                    <div class="card-kicker">02 / Retrieval</div>
+                    <div class="card-headline">Observation Schema 很关键</div>
+                    <div class="card-copy">
+                        它不是简单记聊天，而是记工具调用、文件改动、决策与时间点，
+                        这决定了后续 AI 压缩和检索质量。
+                    </div>
+                    <ul class="card-list">
+                        <li>适合做工作流复盘</li>
+                        <li>适合做长期项目续写</li>
+                        <li>适合做高密度摘要</li>
+                    </ul>
+                </article>
+
+                <article class="insight-card purple">
+                    <div class="card-kicker">03 / Tradeoff</div>
+                    <div class="card-headline">整套运行时偏重，不建议照搬</div>
+                    <div class="card-copy">
+                        Bun、Chroma、worker daemon、独立 UI 放在一起，工程体量会上一个台阶。
+                        对当前已有记忆栈来说，收益不一定覆盖复杂度。
+                    </div>
+                    <ul class="card-list">
+                        <li>依赖链更长</li>
+                        <li>调试面更大</li>
+                        <li>兼容性负担更重</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading purple">商品感样样看</div>
+            <div class="evidence-grid">
+                <article class="evidence-card">
+                    <div class="evidence-shot dark">
+                        <div class="shot-bar">
+                            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                        </div>
+                        <div class="shot-content">
+                            <div class="line long"></div>
+                            <div class="line mid"></div>
+                            <div class="line short orange"></div>
+                            <div class="chart"></div>
+                        </div>
+                    </div>
+                    <div class="card-headline tone-orange" style="font-size:15px; margin-bottom:6px;">压缩收益有“产品感”</div>
+                    <div class="card-copy">
+                        当 token 节省、时间线叙事和回忆注入都能被展示出来时，这个系统看起来不像脚本，
+                        更像一个完整产品。
+                    </div>
+                </article>
+
+                <article class="evidence-card">
+                    <div class="evidence-shot light">
+                        <div class="shot-bar">
+                            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                        </div>
+                        <div class="shot-content">
+                            <div class="line long"></div>
+                            <div class="line short"></div>
+                            <div class="mini-metrics">
+                                <div class="mini-metric">
+                                    <div class="mini-value">42</div>
+                                    <div class="mini-label">相关记忆被召回</div>
+                                </div>
+                                <div class="mini-metric">
+                                    <div class="mini-value" style="color:#7b64db;">8s</div>
+                                    <div class="mini-label">快速处理模式</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-headline tone-blue" style="font-size:15px; margin-bottom:6px;">检索界面表达很清楚</div>
+                    <div class="card-copy">
+                        指标、时间点、记忆条目和召回结果之间的关系比较清楚，这是它易被理解的一面。
+                    </div>
+                </article>
+
+                <article class="evidence-card">
+                    <div class="evidence-shot dark">
+                        <div class="shot-bar">
+                            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                        </div>
+                        <div class="shot-content">
+                            <div class="line long blue"></div>
+                            <div class="line mid"></div>
+                            <div class="line short"></div>
+                            <div class="terminal-block">
+                                <div class="terminal-row accent">$ claude-mem capture --project demo</div>
+                                <div class="terminal-row">observations: tool_call, file_change</div>
+                                <div class="terminal-row blue">compressing memories...</div>
+                                <div class="terminal-row">ready for before_prompt_build hook</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-headline tone-green" style="font-size:15px; margin-bottom:6px;">真实实现依赖链不短</div>
+                    <div class="card-copy">
+                        一旦进入运行时和多组件协作，调试成本会显著上升，这也是不建议整套移植的原因。
+                    </div>
+                </article>
+
+                <article class="evidence-card">
+                    <div class="evidence-shot dark" style="background: linear-gradient(180deg, #141414 0%, #0d0d0d 100%);">
+                        <div class="shot-bar">
+                            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                        </div>
+                        <div class="shot-content">
+                            <div class="line long"></div>
+                            <div class="line short green"></div>
+                            <div class="terminal-block" style="background: rgba(255,255,255,0.04);">
+                                <div class="terminal-row">24h+ memory skill</div>
+                                <div class="terminal-row accent">+ AI compression</div>
+                                <div class="terminal-row">hot session vs cold session</div>
+                                <div class="terminal-row blue">worker daemon + cache</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-headline tone-purple" style="font-size:15px; margin-bottom:6px;">运行时治理比功能更难</div>
+                    <div class="card-copy">
+                        真正棘手的不是“做出来”，而是如何让它在长时间、跨项目、跨版本的环境里稳定工作。
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading rose">代价矩形</div>
+            <div class="decision-grid">
+                <article class="decision-card orange">
+                    <div class="card-kicker">不建议复制</div>
+                    <div class="card-headline">Bun Runtime + 独立 daemon</div>
+                    <div class="card-copy">
+                        运行时切换和常驻进程会拉高运维门槛，也让问题更难定位。
+                    </div>
+                </article>
+                <article class="decision-card green">
+                    <div class="card-kicker">值得吸收</div>
+                    <div class="card-headline">Hook 驱动的自动捕获机制</div>
+                    <div class="card-copy">
+                        把记忆捕获嵌进生命周期，而不是依赖用户主动整理，这一点非常值钱。
+                    </div>
+                </article>
+                <article class="decision-card purple">
+                    <div class="card-kicker">不建议复制</div>
+                    <div class="card-headline">Chroma 与现有向量库并存</div>
+                    <div class="card-copy">
+                        如果当前已有 LanceDB 或其他 memory backend，再引入一套数据库收益不大。
+                    </div>
+                </article>
+                <article class="decision-card blue">
+                    <div class="card-kicker">建议落地</div>
+                    <div class="card-headline">缓存 + 选择性注入 + 排噪</div>
+                    <div class="card-copy">
+                        这是最容易迁移到现有系统、又能立刻带来收益的一组能力。
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="paper closing-card">
+                <strong>收束</strong><br>
+                claude-mem 最有启发性的地方不是“给 Claude 做长期记忆”这件事本身，而是它把记忆建模成可压缩、可召回、可按时机注入的运行时对象。
+                对当前体系来说，正确路径不是整套照搬，而是把 <span class="emph orange">prompt 注入</span>、<span class="emph blue">observation schema</span>、<span class="emph green">缓存策略</span> 和 <span class="emph purple">选择性检索</span> 逐步吸收进去。
+            </div>
+        </section>
+
+        <div class="footer">
+            <div class="footer-rule"></div>
+            RESEARCH POSTER / CLAUDE-MEM / GENERATED WITH CLAUDE CODE / 2026-03-26 / NOTES: HOOKS, MEMORY COMPRESSION, SELECTIVE INJECTION, OBSERVATION SCHEMA
+        </div>
+    </div>
+</body>
+</html>

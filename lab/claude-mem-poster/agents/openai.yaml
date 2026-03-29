@@ -1,0 +1,4 @@
+interface:
+  display_name: "Poster"
+  short_description: "Generate poster images from reports, notes, and structured content"
+  default_prompt: "Create a long-form poster from this content, choose an appropriate theme automatically unless I specify one, and return the generated image plus a concise summary."

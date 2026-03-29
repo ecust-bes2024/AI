@@ -1,0 +1,30 @@
+diff --git a/dist/auth-profiles-DRjqKE3G.js b/dist/auth-profiles-DRjqKE3G.js
+--- a/dist/auth-profiles-DRjqKE3G.js
++++ b/dist/auth-profiles-DRjqKE3G.js
+@@ -18123,10 +18123,10 @@
+ function resolveGatewayDriftCheckCredentialsFromConfig(params) {
+ 	return resolveGatewayCredentialsFromConfig({
+ 		cfg: params.cfg,
+-		env: {},
++		env: process.env,
+ 		modeOverride: "local",
+-		localTokenPrecedence: "config-first"
++		localTokenPrecedence: "env-first"
+ 	});
+ }
+ //#endregion
+diff --git a/dist/auth-profiles-DDVivXkv.js b/dist/auth-profiles-DDVivXkv.js
+--- a/dist/auth-profiles-DDVivXkv.js
++++ b/dist/auth-profiles-DDVivXkv.js
+@@ -19803,10 +19803,10 @@
+ function resolveGatewayDriftCheckCredentialsFromConfig(params) {
+ 	return resolveGatewayCredentialsFromConfig({
+ 		cfg: params.cfg,
+-		env: {},
++		env: process.env,
+ 		modeOverride: "local",
+-		localTokenPrecedence: "config-first"
++		localTokenPrecedence: "env-first"
+ 	});
+ }
+ //#endregion

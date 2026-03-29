@@ -1,0 +1,102 @@
+{
+  "schema_version": "learn-briefing/v1",
+  "source": {
+    "type": "github_repo",
+    "locator": "https://github.com/N1nEmAn/edict-2.0",
+    "label": "N1nEmAn/edict-2.0",
+    "captured_at": "2026-03-09T13:50:00+08:00",
+    "trust_class": "third_party_untrusted"
+  },
+  "generation": {
+    "enhancement_used": false
+  },
+  "facts": {
+    "observed_components": [
+      "languages detected: Python, HTML, TypeScript, CSS, Shell"
+    ],
+    "execution_surface": {
+      "installation_signals": [
+        "No package install path verified from current extracted artifacts"
+      ],
+      "runtime_signals": [
+        "No runtime entrypoint verified from current extracted artifacts"
+      ],
+      "dependency_signals": [
+        "Dependency manifest not inspected into this briefing yet"
+      ],
+      "network_signals": [
+        "GitHub API token was required for stable repository extraction in lab"
+      ],
+      "credential_signals": [
+        "Repository extraction benefited from GITHUB_TOKEN in lab"
+      ],
+      "side_effect_signals": [
+        "Generates local output artifacts under Skill_Seekers output directory"
+      ]
+    }
+  },
+  "synthesis": {
+    "what_it_is": "A third-party software repository that Skill_Seekers could successfully ingest into an initial skill plus reference artifacts.",
+    "core_value": [
+      "Produces compact extracted artifacts suitable for downstream /learn review",
+      "Repository structure and README are available without forcing /learn to read the full repo"
+    ],
+    "transferable_parts": [
+      "README-described concepts",
+      "file structure overview",
+      "initial generated skill framing"
+    ]
+  },
+  "unknowns": [
+    {
+      "topic": "runtime_entrypoint",
+      "reason": "not verified from current extracted artifacts"
+    },
+    {
+      "topic": "dependency_manifest_details",
+      "reason": "not yet reviewed into briefing"
+    },
+    {
+      "topic": "production_readiness",
+      "reason": "insufficient evidence from current extracted artifacts"
+    }
+  ],
+  "evidence_index": [
+    {
+      "id": "generated_skill",
+      "kind": "file",
+      "ref": "/Users/jerry_hu/AI/Skill_Seekers/output/edict-2.0/SKILL.md",
+      "supports": [
+        "synthesis.what_it_is",
+        "synthesis.transferable_parts"
+      ]
+    },
+    {
+      "id": "readme",
+      "kind": "file",
+      "ref": "/Users/jerry_hu/AI/Skill_Seekers/output/edict-2.0/references/README.md",
+      "supports": [
+        "facts.observed_components",
+        "synthesis.core_value"
+      ]
+    },
+    {
+      "id": "file_tree",
+      "kind": "tree",
+      "ref": "/Users/jerry_hu/AI/Skill_Seekers/output/edict-2.0/references/file_structure.md",
+      "supports": [
+        "facts.observed_components",
+        "synthesis.transferable_parts"
+      ]
+    },
+    {
+      "id": "run_log",
+      "kind": "log",
+      "ref": "/Users/jerry_hu/AI/skill-seekers-real/run.log",
+      "supports": [
+        "facts.observed_components",
+        "facts.execution_surface"
+      ]
+    }
+  ]
+}

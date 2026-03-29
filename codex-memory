@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+
+import { access } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const candidates = [
+  process.env.CODEX_MEMORY_ENTRY,
+  path.join(scriptDir, "toolbox/mcp/openclaw-memory-bridge/codex-memory.mjs"),
+  path.join(scriptDir, "sandbox/openclaw-memory-bridge/codex-memory.mjs"),
+  path.join(scriptDir, "openclaw-memory-bridge/codex-memory.mjs"),
+].filter(Boolean);
+
+let entryPath = null;
+for (const candidate of candidates) {
+  try {
+    await access(candidate);
+    entryPath = candidate;
+    break;
+  } catch {
+    // Try the next candidate path.
+  }
+}
+
+if (!entryPath) {
+  console.error("Unable to find codex-memory.mjs. Checked:");
+  for (const candidate of candidates) console.error(`- ${candidate}`);
+  process.exit(1);
+}
+
+await import(pathToFileURL(entryPath).href);

@@ -1,0 +1,17 @@
+.DS_Store
+**/.DS_Store
+__pycache__/
+**/__pycache__/
+*.pyc
+.playwright-cli/
+.playwright-mcp/
+sandbox/learn-temp/
+sandbox/docs/team-c-codex-smoke/
+sandbox/repos/
+docs/research/team-c-codex/demo-team-*/
+docs/research/team-c-codex/validate-team-*/
+docs/research/team-c-codex/**/.team.lock
+*.log
+
+
+

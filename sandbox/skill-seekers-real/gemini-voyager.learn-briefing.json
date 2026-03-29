@@ -1,0 +1,152 @@
+{
+  "schema_version": "learn-briefing/v1",
+  "source": {
+    "type": "github_repo",
+    "locator": "https://github.com/Nagi-ovo/gemini-voyager",
+    "label": "Nagi-ovo/gemini-voyager",
+    "captured_at": "2026-03-09T14:50:00+08:00",
+    "trust_class": "third_party_untrusted"
+  },
+  "generation": {
+    "enhancement_used": true
+  },
+  "facts": {
+    "observed_components": [
+      "README extracted",
+      "issues extracted",
+      "releases extracted",
+      "file tree extracted",
+      "final SKILL.md present",
+      "SKILL.md.backup present",
+      "languages detected: TypeScript, CSS, JavaScript, Swift, Shell, HTML",
+      "file tree size: 846 items",
+      "issues count observed: 73",
+      "releases count observed: 77"
+    ],
+    "execution_surface": {
+      "installation_signals": [
+        "Browser extension / user-facing app repository signals present in extracted artifacts",
+        "No package install procedure verified into this briefing beyond extracted documentation"
+      ],
+      "runtime_signals": [
+        "Repository ingested as a software project with generated SKILL.md and reference corpus",
+        "Concrete runtime entrypoint not verified in this briefing"
+      ],
+      "dependency_signals": [
+        "Language mix indicates TypeScript/CSS/JavaScript-heavy project",
+        "Dependency manifest details not yet normalized into this briefing"
+      ],
+      "network_signals": [
+        "Repository extraction used GitHub API access in lab",
+        "Runtime network behavior of the target project not verified from this briefing"
+      ],
+      "credential_signals": [
+        "Skill_Seekers repo extraction benefited from GITHUB_TOKEN in lab",
+        "Target project credential needs not verified from final artifact alone"
+      ],
+      "side_effect_signals": [
+        "Skill_Seekers generated local output directory with SKILL.md and references",
+        "Target project side effects not verified from final artifact alone"
+      ]
+    }
+  },
+  "synthesis": {
+    "what_it_is": "A large third-party software repository that Skill_Seekers converted into a final skill directory with a SKILL.md plus reference artifacts for README, issues, releases, and file structure.",
+    "core_value": [
+      "Provides a compressed project briefing without requiring /learn to inspect the full repository tree",
+      "Includes supporting references that make the summary partially auditable"
+    ],
+    "transferable_parts": [
+      "README-described product framing",
+      "high-level repository structure",
+      "issue/release history signals",
+      "generated skill framing for downstream review"
+    ]
+  },
+  "unknowns": [
+    {
+      "topic": "runtime_entrypoint",
+      "reason": "not verified from final artifact into this briefing"
+    },
+    {
+      "topic": "dependency_manifest_details",
+      "reason": "not normalized from final artifact into this briefing"
+    },
+    {
+      "topic": "project_runtime_network_behavior",
+      "reason": "not directly established from final artifact summary"
+    },
+    {
+      "topic": "enhancement_effect_on_final_skill",
+      "reason": "enhancement ran but log indicates SKILL.md may not have been materially updated"
+    }
+  ],
+  "evidence_index": [
+    {
+      "id": "final_skill",
+      "kind": "file",
+      "ref": "/Users/jerry_hu/AI/Skill_Seekers/output/gemini-voyager/SKILL.md",
+      "supports": [
+        "facts.observed_components",
+        "synthesis.what_it_is",
+        "synthesis.transferable_parts"
+      ]
+    },
+    {
+      "id": "readme",
+      "kind": "file",
+      "ref": "/Users/jerry_hu/AI/Skill_Seekers/output/gemini-voyager/references/README.md",
+      "supports": [
+        "facts.observed_components",
+        "synthesis.core_value",
+        "synthesis.transferable_parts"
+      ]
+    },
+    {
+      "id": "issues",
+      "kind": "file",
+      "ref": "/Users/jerry_hu/AI/Skill_Seekers/output/gemini-voyager/references/issues.md",
+      "supports": [
+        "facts.observed_components",
+        "synthesis.transferable_parts"
+      ]
+    },
+    {
+      "id": "releases",
+      "kind": "file",
+      "ref": "/Users/jerry_hu/AI/Skill_Seekers/output/gemini-voyager/references/releases.md",
+      "supports": [
+        "facts.observed_components",
+        "synthesis.transferable_parts"
+      ]
+    },
+    {
+      "id": "file_tree",
+      "kind": "tree",
+      "ref": "/Users/jerry_hu/AI/Skill_Seekers/output/gemini-voyager/references/file_structure.md",
+      "supports": [
+        "facts.observed_components",
+        "synthesis.transferable_parts"
+      ]
+    },
+    {
+      "id": "run_log",
+      "kind": "log",
+      "ref": "/Users/jerry_hu/AI/skill-seekers-real/gemini-voyager-full.log",
+      "supports": [
+        "generation.enhancement_used",
+        "facts.observed_components",
+        "facts.execution_surface",
+        "unknowns"
+      ]
+    }
+  ],
+  "artifact_paths": {
+    "generated_skill": "/Users/jerry_hu/AI/Skill_Seekers/output/gemini-voyager/SKILL.md",
+    "skill_backup": "/Users/jerry_hu/AI/Skill_Seekers/output/gemini-voyager/SKILL.md.backup",
+    "references_readme": "/Users/jerry_hu/AI/Skill_Seekers/output/gemini-voyager/references/README.md",
+    "references_issues": "/Users/jerry_hu/AI/Skill_Seekers/output/gemini-voyager/references/issues.md",
+    "references_releases": "/Users/jerry_hu/AI/Skill_Seekers/output/gemini-voyager/references/releases.md",
+    "references_file_tree": "/Users/jerry_hu/AI/Skill_Seekers/output/gemini-voyager/references/file_structure.md"
+  }
+}

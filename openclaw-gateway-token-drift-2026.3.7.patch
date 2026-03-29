@@ -1,0 +1,45 @@
+diff --git a/dist/daemon-cli.js b/dist/daemon-cli.js
+--- a/dist/daemon-cli.js
++++ b/dist/daemon-cli.js
+@@ -19413,10 +19413,10 @@
+ function resolveGatewayTokenForDriftCheck(params) {
+ 	return resolveGatewayCredentialsFromConfig({
+ 		cfg: params.cfg,
+-		env: {},
++		env: process.env,
+ 		modeOverride: "local",
+-		localTokenPrecedence: "config-first"
++		localTokenPrecedence: "env-first"
+ 	}).token;
+ }
+ //#endregion
+diff --git a/dist/lifecycle-core-CTgYXEXn.js b/dist/lifecycle-core-CTgYXEXn.js
+--- a/dist/lifecycle-core-CTgYXEXn.js
++++ b/dist/lifecycle-core-CTgYXEXn.js
+@@ -185,10 +185,10 @@
+ function resolveGatewayTokenForDriftCheck(params) {
+ 	return resolveGatewayCredentialsFromConfig({
+ 		cfg: params.cfg,
+-		env: {},
++		env: process.env,
+ 		modeOverride: "local",
+-		localTokenPrecedence: "config-first"
++		localTokenPrecedence: "env-first"
+ 	}).token;
+ }
+ //#endregion
+diff --git a/dist/lifecycle-core-CYzebOLX.js b/dist/lifecycle-core-CYzebOLX.js
+--- a/dist/lifecycle-core-CYzebOLX.js
++++ b/dist/lifecycle-core-CYzebOLX.js
+@@ -185,10 +185,10 @@
+ function resolveGatewayTokenForDriftCheck(params) {
+ 	return resolveGatewayCredentialsFromConfig({
+ 		cfg: params.cfg,
+-		env: {},
++		env: process.env,
+ 		modeOverride: "local",
+-		localTokenPrecedence: "config-first"
++		localTokenPrecedence: "env-first"
+ 	}).token;
+ }
+ //#endregion

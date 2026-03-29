@@ -1,0 +1,990 @@
+{
+  "repo_info": {
+    "name": "edict-2.0",
+    "full_name": "N1nEmAn/edict-2.0",
+    "description": "🏛️ 三省六部制 · OpenClaw Multi-Agent Orchestration System — 9 specialized AI agents with real-time dashboard, model config, and full audit trails",
+    "url": "https://github.com/N1nEmAn/edict-2.0",
+    "homepage": "https://openclaw.ai",
+    "stars": 67,
+    "forks": 4,
+    "open_issues": 0,
+    "default_branch": "main",
+    "created_at": "2026-03-03T18:41:25+00:00",
+    "updated_at": "2026-03-08T19:54:53+00:00",
+    "language": "Python",
+    "license": "MIT License",
+    "topics": []
+  },
+  "readme": "# 支持原创，抵制盗版\nhttps://github.com/wanikua/boluobobo-ai-court-tutorial",
+  "file_tree": [
+    {
+      "path": ".dockerignore",
+      "type": "file",
+      "size": 224
+    },
+    {
+      "path": ".github",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": ".gitignore",
+      "type": "file",
+      "size": 459
+    },
+    {
+      "path": ".vite",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": ".vscode",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "type": "file",
+      "size": 5080
+    },
+    {
+      "path": "Dockerfile",
+      "type": "file",
+      "size": 1178
+    },
+    {
+      "path": "Edict Agent Architecture.pdf",
+      "type": "file",
+      "size": 534235
+    },
+    {
+      "path": "LICENSE",
+      "type": "file",
+      "size": 1093
+    },
+    {
+      "path": "README.md",
+      "type": "file",
+      "size": 84
+    },
+    {
+      "path": "README_EN.md",
+      "type": "file",
+      "size": 19133
+    },
+    {
+      "path": "ROADMAP.md",
+      "type": "file",
+      "size": 4458
+    },
+    {
+      "path": "agents",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "dashboard",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "docker-compose.yml",
+      "type": "file",
+      "size": 243
+    },
+    {
+      "path": "docker",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "docs",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict_agent_architecture.md",
+      "type": "file",
+      "size": 4944
+    },
+    {
+      "path": "examples",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "install.sh",
+      "type": "file",
+      "size": 11097
+    },
+    {
+      "path": "scripts",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "tests",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "type": "file",
+      "size": 441
+    },
+    {
+      "path": ".github/workflows",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": ".vite/deps",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": ".vscode/settings.json",
+      "type": "file",
+      "size": 281
+    },
+    {
+      "path": "agents/bingbu",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "agents/gongbu",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "agents/hubu",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "agents/libu",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "agents/libu_hr",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "agents/menxia",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "agents/shangshu",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "agents/taizi",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "agents/xingbu",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "agents/zaochao",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "agents/zhongshu",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "dashboard/dashboard.html",
+      "type": "file",
+      "size": 176116
+    },
+    {
+      "path": "dashboard/dist",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "dashboard/server.py",
+      "type": "file",
+      "size": 98953
+    },
+    {
+      "path": "docker/demo_data",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "docs/Agent_video_Pippit_20260225121727.mp4",
+      "type": "file",
+      "size": 38492952
+    },
+    {
+      "path": "docs/demo.gif",
+      "type": "file",
+      "size": 3381746
+    },
+    {
+      "path": "docs/getting-started.md",
+      "type": "file",
+      "size": 4351
+    },
+    {
+      "path": "docs/remote-skills-guide.md",
+      "type": "file",
+      "size": 10412
+    },
+    {
+      "path": "docs/remote-skills-quickstart.md",
+      "type": "file",
+      "size": 7424
+    },
+    {
+      "path": "docs/screenshots",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "docs/task-dispatch-architecture.md",
+      "type": "file",
+      "size": 54782
+    },
+    {
+      "path": "docs/wechat-article.md",
+      "type": "file",
+      "size": 12593
+    },
+    {
+      "path": "edict/.env.example",
+      "type": "file",
+      "size": 835
+    },
+    {
+      "path": "edict/Dockerfile",
+      "type": "file",
+      "size": 556
+    },
+    {
+      "path": "edict/alembic.ini",
+      "type": "file",
+      "size": 585
+    },
+    {
+      "path": "edict/backend",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict/docker-compose.yml",
+      "type": "file",
+      "size": 3167
+    },
+    {
+      "path": "edict/frontend",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict/migration",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict/scripts",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "examples/README.md",
+      "type": "file",
+      "size": 975
+    },
+    {
+      "path": "examples/code-review.md",
+      "type": "file",
+      "size": 4602
+    },
+    {
+      "path": "examples/competitive-analysis.md",
+      "type": "file",
+      "size": 4693
+    },
+    {
+      "path": "examples/weekly-report.md",
+      "type": "file",
+      "size": 4269
+    },
+    {
+      "path": "scripts/apply_model_changes.py",
+      "type": "file",
+      "size": 3936
+    },
+    {
+      "path": "scripts/fetch_morning_news.py",
+      "type": "file",
+      "size": 9148
+    },
+    {
+      "path": "scripts/file_lock.py",
+      "type": "file",
+      "size": 3234
+    },
+    {
+      "path": "scripts/kanban_update.py",
+      "type": "file",
+      "size": 18049
+    },
+    {
+      "path": "scripts/record_demo.py",
+      "type": "file",
+      "size": 4988
+    },
+    {
+      "path": "scripts/refresh_live_data.py",
+      "type": "file",
+      "size": 5073
+    },
+    {
+      "path": "scripts/run_loop.sh",
+      "type": "file",
+      "size": 2131
+    },
+    {
+      "path": "scripts/skill_manager.py",
+      "type": "file",
+      "size": 11439
+    },
+    {
+      "path": "scripts/sync_agent_config.py",
+      "type": "file",
+      "size": 11562
+    },
+    {
+      "path": "scripts/sync_from_openclaw_runtime.py",
+      "type": "file",
+      "size": 13056
+    },
+    {
+      "path": "scripts/sync_officials_stats.py",
+      "type": "file",
+      "size": 9356
+    },
+    {
+      "path": "scripts/take_screenshots.py",
+      "type": "file",
+      "size": 3986
+    },
+    {
+      "path": "scripts/utils.py",
+      "type": "file",
+      "size": 1712
+    },
+    {
+      "path": "tests/test_e2e_kanban.py",
+      "type": "file",
+      "size": 5538
+    },
+    {
+      "path": "tests/test_file_lock.py",
+      "type": "file",
+      "size": 1824
+    },
+    {
+      "path": "tests/test_kanban.py",
+      "type": "file",
+      "size": 1982
+    },
+    {
+      "path": "tests/test_server.py",
+      "type": "file",
+      "size": 1142
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.md",
+      "type": "file",
+      "size": 248
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature_request.md",
+      "type": "file",
+      "size": 144
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "type": "file",
+      "size": 774
+    },
+    {
+      "path": ".vite/deps/_metadata.json",
+      "type": "file",
+      "size": 146
+    },
+    {
+      "path": ".vite/deps/package.json",
+      "type": "file",
+      "size": 23
+    },
+    {
+      "path": "agents/bingbu/SOUL.md",
+      "type": "file",
+      "size": 3199
+    },
+    {
+      "path": "agents/gongbu/SOUL.md",
+      "type": "file",
+      "size": 4020
+    },
+    {
+      "path": "agents/hubu/SOUL.md",
+      "type": "file",
+      "size": 3277
+    },
+    {
+      "path": "agents/libu/SOUL.md",
+      "type": "file",
+      "size": 3215
+    },
+    {
+      "path": "agents/libu_hr/SOUL.md",
+      "type": "file",
+      "size": 1909
+    },
+    {
+      "path": "agents/menxia/SOUL.md",
+      "type": "file",
+      "size": 2919
+    },
+    {
+      "path": "agents/shangshu/SOUL.md",
+      "type": "file",
+      "size": 3824
+    },
+    {
+      "path": "agents/taizi/SOUL.md",
+      "type": "file",
+      "size": 6079
+    },
+    {
+      "path": "agents/xingbu/SOUL.md",
+      "type": "file",
+      "size": 3260
+    },
+    {
+      "path": "agents/zaochao/SOUL.md",
+      "type": "file",
+      "size": 1870
+    },
+    {
+      "path": "agents/zhongshu/SOUL.md",
+      "type": "file",
+      "size": 7482
+    },
+    {
+      "path": "dashboard/dist/assets",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "dashboard/dist/index.html",
+      "type": "file",
+      "size": 481
+    },
+    {
+      "path": "docker/demo_data/agent_config.json",
+      "type": "file",
+      "size": 7219
+    },
+    {
+      "path": "docker/demo_data/last_model_change_result.json",
+      "type": "file",
+      "size": 3
+    },
+    {
+      "path": "docker/demo_data/live_status.json",
+      "type": "file",
+      "size": 49928
+    },
+    {
+      "path": "docker/demo_data/model_change_log.json",
+      "type": "file",
+      "size": 3
+    },
+    {
+      "path": "docker/demo_data/morning_brief.json",
+      "type": "file",
+      "size": 1487
+    },
+    {
+      "path": "docker/demo_data/officials_stats.json",
+      "type": "file",
+      "size": 10548
+    },
+    {
+      "path": "docker/demo_data/pending_model_changes.json",
+      "type": "file",
+      "size": 3
+    },
+    {
+      "path": "docker/demo_data/tasks_source.json",
+      "type": "file",
+      "size": 4710
+    },
+    {
+      "path": "docs/screenshots/01-kanban-main.png",
+      "type": "file",
+      "size": 196509
+    },
+    {
+      "path": "docs/screenshots/02-monitor.png",
+      "type": "file",
+      "size": 364598
+    },
+    {
+      "path": "docs/screenshots/03-task-detail.png",
+      "type": "file",
+      "size": 319586
+    },
+    {
+      "path": "docs/screenshots/04-model-config.png",
+      "type": "file",
+      "size": 466207
+    },
+    {
+      "path": "docs/screenshots/05-skills-config.png",
+      "type": "file",
+      "size": 197663
+    },
+    {
+      "path": "docs/screenshots/06-official-overview.png",
+      "type": "file",
+      "size": 414747
+    },
+    {
+      "path": "docs/screenshots/07-sessions.png",
+      "type": "file",
+      "size": 554709
+    },
+    {
+      "path": "docs/screenshots/08-memorials.png",
+      "type": "file",
+      "size": 368182
+    },
+    {
+      "path": "docs/screenshots/09-templates.png",
+      "type": "file",
+      "size": 340215
+    },
+    {
+      "path": "docs/screenshots/10-morning-briefing.png",
+      "type": "file",
+      "size": 638975
+    },
+    {
+      "path": "docs/screenshots/11-ceremony.png",
+      "type": "file",
+      "size": 99543
+    },
+    {
+      "path": "docs/screenshots/README.md",
+      "type": "file",
+      "size": 1396
+    },
+    {
+      "path": "edict/backend/app",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict/backend/requirements.txt",
+      "type": "file",
+      "size": 241
+    },
+    {
+      "path": "edict/frontend/.env.development",
+      "type": "file",
+      "size": 35
+    },
+    {
+      "path": "edict/frontend/Dockerfile",
+      "type": "file",
+      "size": 269
+    },
+    {
+      "path": "edict/frontend/index.html",
+      "type": "file",
+      "size": 383
+    },
+    {
+      "path": "edict/frontend/nginx.conf",
+      "type": "file",
+      "size": 566
+    },
+    {
+      "path": "edict/frontend/package-lock.json",
+      "type": "file",
+      "size": 94486
+    },
+    {
+      "path": "edict/frontend/package.json",
+      "type": "file",
+      "size": 624
+    },
+    {
+      "path": "edict/frontend/postcss.config.js",
+      "type": "file",
+      "size": 80
+    },
+    {
+      "path": "edict/frontend/src",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict/frontend/tailwind.config.js",
+      "type": "file",
+      "size": 811
+    },
+    {
+      "path": "edict/frontend/tsconfig.json",
+      "type": "file",
+      "size": 576
+    },
+    {
+      "path": "edict/frontend/tsconfig.tsbuildinfo",
+      "type": "file",
+      "size": 578
+    },
+    {
+      "path": "edict/frontend/vite.config.ts",
+      "type": "file",
+      "size": 290
+    },
+    {
+      "path": "edict/migration/env.py",
+      "type": "file",
+      "size": 1846
+    },
+    {
+      "path": "edict/migration/migrate_json_to_pg.py",
+      "type": "file",
+      "size": 5510
+    },
+    {
+      "path": "edict/migration/script.py.mako",
+      "type": "file",
+      "size": 616
+    },
+    {
+      "path": "edict/migration/versions",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict/scripts/kanban_update_edict.py",
+      "type": "file",
+      "size": 14402
+    },
+    {
+      "path": "dashboard/dist/assets/index-CIswLNpP.css",
+      "type": "file",
+      "size": 48077
+    },
+    {
+      "path": "dashboard/dist/assets/index-CqMbmm5B.js",
+      "type": "file",
+      "size": 253112
+    },
+    {
+      "path": "edict/backend/app/__init__.py",
+      "type": "file",
+      "size": 58
+    },
+    {
+      "path": "edict/backend/app/api",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict/backend/app/config.py",
+      "type": "file",
+      "size": 2234
+    },
+    {
+      "path": "edict/backend/app/db.py",
+      "type": "file",
+      "size": 1065
+    },
+    {
+      "path": "edict/backend/app/main.py",
+      "type": "file",
+      "size": 2402
+    },
+    {
+      "path": "edict/backend/app/models",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict/backend/app/services",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict/backend/app/workers",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict/frontend/src/App.tsx",
+      "type": "file",
+      "size": 3792
+    },
+    {
+      "path": "edict/frontend/src/api.ts",
+      "type": "file",
+      "size": 10324
+    },
+    {
+      "path": "edict/frontend/src/components",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "edict/frontend/src/index.css",
+      "type": "file",
+      "size": 50407
+    },
+    {
+      "path": "edict/frontend/src/main.tsx",
+      "type": "file",
+      "size": 232
+    },
+    {
+      "path": "edict/frontend/src/store.ts",
+      "type": "file",
+      "size": 17006
+    },
+    {
+      "path": "edict/frontend/src/vite-env.d.ts",
+      "type": "file",
+      "size": 38
+    },
+    {
+      "path": "edict/migration/versions/001_initial.py",
+      "type": "file",
+      "size": 5340
+    },
+    {
+      "path": "edict/backend/app/api/__init__.py",
+      "type": "file",
+      "size": 343
+    },
+    {
+      "path": "edict/backend/app/api/admin.py",
+      "type": "file",
+      "size": 2857
+    },
+    {
+      "path": "edict/backend/app/api/agents.py",
+      "type": "file",
+      "size": 2430
+    },
+    {
+      "path": "edict/backend/app/api/events.py",
+      "type": "file",
+      "size": 2718
+    },
+    {
+      "path": "edict/backend/app/api/legacy.py",
+      "type": "file",
+      "size": 3479
+    },
+    {
+      "path": "edict/backend/app/api/tasks.py",
+      "type": "file",
+      "size": 5983
+    },
+    {
+      "path": "edict/backend/app/api/websocket.py",
+      "type": "file",
+      "size": 5027
+    },
+    {
+      "path": "edict/backend/app/models/__init__.py",
+      "type": "file",
+      "size": 204
+    },
+    {
+      "path": "edict/backend/app/models/event.py",
+      "type": "file",
+      "size": 1860
+    },
+    {
+      "path": "edict/backend/app/models/task.py",
+      "type": "file",
+      "size": 5450
+    },
+    {
+      "path": "edict/backend/app/models/thought.py",
+      "type": "file",
+      "size": 2115
+    },
+    {
+      "path": "edict/backend/app/models/todo.py",
+      "type": "file",
+      "size": 2754
+    },
+    {
+      "path": "edict/backend/app/services/__init__.py",
+      "type": "file",
+      "size": 141
+    },
+    {
+      "path": "edict/backend/app/services/event_bus.py",
+      "type": "file",
+      "size": 6999
+    },
+    {
+      "path": "edict/backend/app/services/task_service.py",
+      "type": "file",
+      "size": 8416
+    },
+    {
+      "path": "edict/backend/app/workers/__init__.py",
+      "type": "file",
+      "size": 239
+    },
+    {
+      "path": "edict/backend/app/workers/dispatch_worker.py",
+      "type": "file",
+      "size": 7064
+    },
+    {
+      "path": "edict/backend/app/workers/orchestrator_worker.py",
+      "type": "file",
+      "size": 7096
+    },
+    {
+      "path": "edict/frontend/src/components/ConfirmDialog.tsx",
+      "type": "file",
+      "size": 1160
+    },
+    {
+      "path": "edict/frontend/src/components/CourtCeremony.tsx",
+      "type": "file",
+      "size": 1971
+    },
+    {
+      "path": "edict/frontend/src/components/EdictBoard.tsx",
+      "type": "file",
+      "size": 9305
+    },
+    {
+      "path": "edict/frontend/src/components/MemorialPanel.tsx",
+      "type": "file",
+      "size": 8288
+    },
+    {
+      "path": "edict/frontend/src/components/ModelConfig.tsx",
+      "type": "file",
+      "size": 5876
+    },
+    {
+      "path": "edict/frontend/src/components/MonitorPanel.tsx",
+      "type": "file",
+      "size": 7931
+    },
+    {
+      "path": "edict/frontend/src/components/MorningPanel.tsx",
+      "type": "file",
+      "size": 16959
+    },
+    {
+      "path": "edict/frontend/src/components/OfficialPanel.tsx",
+      "type": "file",
+      "size": 9066
+    },
+    {
+      "path": "edict/frontend/src/components/SessionsPanel.tsx",
+      "type": "file",
+      "size": 11593
+    },
+    {
+      "path": "edict/frontend/src/components/SkillsConfig.tsx",
+      "type": "file",
+      "size": 32220
+    },
+    {
+      "path": "edict/frontend/src/components/TaskModal.tsx",
+      "type": "file",
+      "size": 29466
+    },
+    {
+      "path": "edict/frontend/src/components/TemplatePanel.tsx",
+      "type": "file",
+      "size": 7987
+    },
+    {
+      "path": "edict/frontend/src/components/Toaster.tsx",
+      "type": "file",
+      "size": 338
+    }
+  ],
+  "languages": {
+    "Python": {
+      "bytes": 303010,
+      "percentage": 42.06
+    },
+    "HTML": {
+      "bytes": 176499,
+      "percentage": 24.5
+    },
+    "TypeScript": {
+      "bytes": 173804,
+      "percentage": 24.12
+    },
+    "CSS": {
+      "bytes": 50407,
+      "percentage": 7.0
+    },
+    "Shell": {
+      "bytes": 13228,
+      "percentage": 1.84
+    },
+    "Dockerfile": {
+      "bytes": 2003,
+      "percentage": 0.28
+    },
+    "JavaScript": {
+      "bytes": 891,
+      "percentage": 0.12
+    },
+    "Mako": {
+      "bytes": 616,
+      "percentage": 0.09
+    }
+  },
+  "signatures": [],
+  "test_examples": [],
+  "issues": [],
+  "changelog": "",
+  "releases": []
+}

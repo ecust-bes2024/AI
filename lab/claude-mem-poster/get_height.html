@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        window.onload = function() {
+            const height = document.body.scrollHeight;
+            console.log('HEIGHT:' + height);
+        };
+    </script>
+</head>
+<body>
+    <iframe src="poster.html" style="width: 800px; border: none;" onload="
+        const h = this.contentWindow.document.body.scrollHeight;
+        console.log('HEIGHT:' + h);
+    "></iframe>
+</body>
+</html>

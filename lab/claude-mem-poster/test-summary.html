@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poster Summary</title>
+    <style>
+        :root {
+            --bg-top: #f0ebe2;
+            --bg-bottom: #e7dfd1;
+            --paper-top: #fffaf3;
+            --paper-bottom: #fbf4ea;
+            --ink: #32271f;
+            --muted: #756659;
+            --line: rgba(205, 182, 148, 0.35);
+            --accent: #d27f54;
+            --accent-2: #7a96d8;
+            --accent-3: #76ad8b;
+            --accent-4: #c08abf;
+            --hero-glow: rgba(255,255,255,0.48);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at top left, var(--hero-glow), transparent 28%),
+                linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+            color: var(--ink);
+            padding: 22px 0 34px;
+            line-height: 1.6;
+        }
+        .poster {
+            width: 820px;
+            margin: 0 auto;
+            padding: 0 14px;
+        }
+        .paper {
+            position: relative;
+            background: linear-gradient(180deg, var(--paper-top), var(--paper-bottom));
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 0 10px 28px rgba(79, 63, 40, 0.10);
+            overflow: hidden;
+        }
+        .paper::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.34), transparent 20%),
+                radial-gradient(circle at top right, rgba(255,255,255,0.22), transparent 20%);
+            pointer-events: none;
+        }
+        .hero {
+            padding: 22px 20px 16px;
+            margin-bottom: 14px;
+        }
+        .hero-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .hero-tag {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            background: rgba(255,255,255,0.74);
+            border: 1px solid var(--line);
+        }
+        h1 {
+            font-size: 44px;
+            line-height: 1.06;
+            letter-spacing: -0.05em;
+            margin-bottom: 8px;
+        }
+        .hero-subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+        .hero-summary {
+            font-size: 13px;
+            color: var(--ink);
+            opacity: 0.84;
+            line-height: 1.75;
+            margin-bottom: 12px;
+        }
+        .meta-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .meta-pill {
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            color: var(--muted);
+            background: rgba(255,255,255,0.68);
+            border: 1px solid var(--line);
+        }
+        .summary-grid,
+        .metrics-grid,
+        .detail-grid,
+        .insight-grid,
+        .decision-grid {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .summary-grid, .metrics-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        .detail-grid, .insight-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .decision-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .summary-card,
+        .metric-card,
+        .detail-card,
+        .insight-card,
+        .decision-card {
+            position: relative;
+            background: rgba(255,255,255,0.74);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(97, 77, 46, 0.06);
+            overflow: hidden;
+        }
+        .summary-card, .metric-card {
+            padding: 13px 12px 14px;
+            min-height: 102px;
+        }
+        .detail-card, .insight-card, .decision-card {
+            padding: 14px 14px 16px;
+        }
+        .summary-card::after, .insight-card::after, .decision-card::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            opacity: 0.9;
+        }
+        .summary-label, .detail-kicker, .card-kicker, .metric-index {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+        .summary-title, .detail-title, .card-headline, .metric-label {
+            font-weight: 850;
+            line-height: 1.3;
+            margin-bottom: 8px;
+        }
+        .summary-title { font-size: 13px; }
+        .metric-value {
+            font-size: 40px;
+            font-weight: 900;
+            line-height: 0.95;
+            letter-spacing: -0.05em;
+            margin-bottom: 6px;
+        }
+        .metric-label { font-size: 13px; }
+        .summary-text, .metric-note, .detail-body, .card-copy, .detail-extra {
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+        .detail-title, .card-headline { font-size: 16px; }
+        .detail-body, .card-copy { font-size: 12px; color: rgba(0,0,0,0.68); }
+        .detail-list {
+            margin-top: 10px;
+            padding-left: 16px;
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+        .detail-extra p {
+            margin-top: 8px;
+        }
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 850;
+            letter-spacing: -0.03em;
+            margin: 0 0 10px;
+        }
+        .section-heading::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+            opacity: 0.45;
+        }
+        .tone-0 { color: var(--accent); }
+        .tone-1 { color: var(--accent-2); }
+        .tone-2 { color: var(--accent-3); }
+        .tone-3 { color: var(--accent-4); }
+        .footer {
+            margin-top: 2px;
+            padding: 8px 4px 0;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 0.04em;
+            line-height: 1.8;
+        }
+        .footer-rule {
+            height: 1px;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.35;
+        }
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            background: rgba(255,255,255,0.62);
+            padding: 1px 5px;
+            border-radius: 5px;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <section class="paper hero">
+            <div class="hero-tags"><span class='hero-tag'>TEXT</span><span class='hero-tag'>Summary</span><span class='hero-tag'>Key Point 1</span></div>
+            <h1>Poster Summary</h1>
+            <div class="hero-subtitle">Weekly summary: shipped poster skill CLI. Added auto theme inference, markdown and JSON support,</div>
+            <div class="hero-summary">Weekly summary: shipped poster skill CLI.</div>
+            <div class="meta-row">
+                <span class="meta-pill">Theme: summary</span>
+                <span class="meta-pill">Source: text</span>
+                <span class="meta-pill">Date: 2026-03-26</span>
+                <span class="meta-pill">Sections: 2</span>
+            </div>
+            <div class="summary-grid">
+            <article class="summary-card">
+                <div class="summary-label">Block 01</div>
+                <div class="summary-title tone-0">Key Point 1</div>
+                <div class="summary-text">Added auto theme inference, markdown and JSON support, HTML passthrough, and multi-theme rendering.</div>
+            </article>
+            
+
+            <article class="summary-card">
+                <div class="summary-label">Block 02</div>
+                <div class="summary-title tone-1">Key Point 2</div>
+                <div class="summary-text">Next step is installation and more real screenshots.</div>
+            </article>
+            
+
+            <article class="summary-card">
+                <div class="summary-label">Block</div>
+                <div class="summary-title">Structured Summary</div>
+                <div class="summary-text">This slot stays available when the source has fewer sections.</div>
+            </article>
+            
+
+            <article class="summary-card">
+                <div class="summary-label">Block</div>
+                <div class="summary-title">Structured Summary</div>
+                <div class="summary-text">This slot stays available when the source has fewer sections.</div>
+            </article>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-heading">Key Metrics</div>
+            <div class="metrics-grid">
+            <article class="metric-card">
+                <div class="metric-index">01</div>
+                <div class="metric-value tone-0">TEXT</div>
+                <div class="metric-label">Input Type</div>
+                <div class="metric-note">auto-detected</div>
+            </article>
+            
+
+            <article class="metric-card">
+                <div class="metric-index">02</div>
+                <div class="metric-value tone-1">2</div>
+                <div class="metric-label">Sections</div>
+                <div class="metric-note">normalized blocks</div>
+            </article>
+            
+
+            <article class="metric-card">
+                <div class="metric-index">03</div>
+                <div class="metric-value tone-2">0</div>
+                <div class="metric-label">Bullet Points</div>
+                <div class="metric-note">key takeaways</div>
+            </article>
+            
+
+            <article class="metric-card">
+                <div class="metric-index">04</div>
+                <div class="metric-value tone-3">03-26</div>
+                <div class="metric-label">Build Date</div>
+                <div class="metric-note">poster render time</div>
+            </article>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-heading">Detailed Sections</div>
+            <div class="detail-grid">
+            <article class="detail-card">
+                <div class="detail-kicker">Point 01</div>
+                <div class="detail-title tone-0">Key Point 1</div>
+                <div class="detail-body">Added auto theme inference, markdown and JSON support, HTML passthrough, and multi-theme rendering.</div>
+                
+                
+            </article>
+            
+
+            <article class="detail-card">
+                <div class="detail-kicker">Point 02</div>
+                <div class="detail-title tone-1">Key Point 2</div>
+                <div class="detail-body">Next step is installation and more real screenshots.</div>
+                
+                
+            </article>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-heading">Evidence / Highlights</div>
+            <div class="insight-grid">
+            <article class="insight-card">
+                <div class="card-kicker">Evidence 1</div>
+                <div class="card-headline tone-0">Key Point 1</div>
+                <div class="card-copy">Added auto theme inference, markdown and JSON support, HTML passthrough, and multi-theme rendering.</div>
+            </article>
+            
+
+            <article class="insight-card">
+                <div class="card-kicker">Evidence 2</div>
+                <div class="card-headline tone-1">Key Point 2</div>
+                <div class="card-copy">Next step is installation and more real screenshots.</div>
+            </article>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-heading">Decisions / Next Moves</div>
+            <div class="decision-grid">
+            <article class="decision-card">
+                <div class="card-kicker">Takeaway 1</div>
+                <div class="card-headline tone-0">Key Point 1</div>
+                <div class="card-copy">Added auto theme inference, markdown and JSON support, HTML passthrough, and multi-theme rendering.</div>
+            </article>
+            
+
+            <article class="decision-card">
+                <div class="card-kicker">Takeaway 2</div>
+                <div class="card-headline tone-1">Key Point 2</div>
+                <div class="card-copy">Next step is installation and more real screenshots.</div>
+            </article>
+            </div>
+        </section>
+
+        <div class="footer">
+            <div class="footer-rule"></div>
+            Generated from text · 2026-03-26
+        </div>
+    </div>
+</body>
+</html>

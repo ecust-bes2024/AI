@@ -1,0 +1,18 @@
+{
+  "memory": {
+    "command": "node",
+    "args": ["/Users/jerry_hu/.claude/plugins/memory-lancedb/dist/index.js"],
+    "env": {
+      "JINA_API_KEY": "jina_8ab74b5937814d01a2292f125a727075tT-Y5d3QBya6nImvifVACcSJossJ",
+      "JINA_BASE_URL": "https://api.jina.ai/v1",
+      "HTTP_PROXY": "",
+      "HTTPS_PROXY": "",
+      "http_proxy": "",
+      "https_proxy": ""
+    }
+  },
+  "playwright": {
+    "command": "npx",
+    "args": ["-y", "@playwright/mcp@latest"]
+  }
+}

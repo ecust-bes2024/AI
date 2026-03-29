@@ -1,0 +1,192 @@
+# Repository File Structure
+
+Total items: 186
+
+```
+📄 .dockerignore
+📁 .github
+📄 .gitignore
+📁 .vite
+📁 .vscode
+📄 CONTRIBUTING.md
+📄 Dockerfile
+📄 Edict Agent Architecture.pdf
+📄 LICENSE
+📄 README.md
+📄 README_EN.md
+📄 ROADMAP.md
+📁 agents
+📁 dashboard
+📄 docker-compose.yml
+📁 docker
+📁 docs
+📁 edict
+📄 edict_agent_architecture.md
+📁 examples
+📄 install.sh
+📁 scripts
+📁 tests
+  📁 ISSUE_TEMPLATE
+  📄 pull_request_template.md
+  📁 workflows
+  📁 deps
+  📄 settings.json
+  📁 bingbu
+  📁 gongbu
+  📁 hubu
+  📁 libu
+  📁 libu_hr
+  📁 menxia
+  📁 shangshu
+  📁 taizi
+  📁 xingbu
+  📁 zaochao
+  📁 zhongshu
+  📄 dashboard.html
+  📁 dist
+  📄 server.py
+  📁 demo_data
+  📄 Agent_video_Pippit_20260225121727.mp4
+  📄 demo.gif
+  📄 getting-started.md
+  📄 remote-skills-guide.md
+  📄 remote-skills-quickstart.md
+  📁 screenshots
+  📄 task-dispatch-architecture.md
+  📄 wechat-article.md
+  📄 .env.example
+  📄 Dockerfile
+  📄 alembic.ini
+  📁 backend
+  📄 docker-compose.yml
+  📁 frontend
+  📁 migration
+  📁 scripts
+  📄 README.md
+  📄 code-review.md
+  📄 competitive-analysis.md
+  📄 weekly-report.md
+  📄 apply_model_changes.py
+  📄 fetch_morning_news.py
+  📄 file_lock.py
+  📄 kanban_update.py
+  📄 record_demo.py
+  📄 refresh_live_data.py
+  📄 run_loop.sh
+  📄 skill_manager.py
+  📄 sync_agent_config.py
+  📄 sync_from_openclaw_runtime.py
+  📄 sync_officials_stats.py
+  📄 take_screenshots.py
+  📄 utils.py
+  📄 test_e2e_kanban.py
+  📄 test_file_lock.py
+  📄 test_kanban.py
+  📄 test_server.py
+    📄 bug_report.md
+    📄 feature_request.md
+    📄 ci.yml
+    📄 _metadata.json
+    📄 package.json
+    📄 SOUL.md
+    📄 SOUL.md
+    📄 SOUL.md
+    📄 SOUL.md
+    📄 SOUL.md
+    📄 SOUL.md
+    📄 SOUL.md
+    📄 SOUL.md
+    📄 SOUL.md
+    📄 SOUL.md
+    📄 SOUL.md
+    📁 assets
+    📄 index.html
+    📄 agent_config.json
+    📄 last_model_change_result.json
+    📄 live_status.json
+    📄 model_change_log.json
+    📄 morning_brief.json
+    📄 officials_stats.json
+    📄 pending_model_changes.json
+    📄 tasks_source.json
+    📄 01-kanban-main.png
+    📄 02-monitor.png
+    📄 03-task-detail.png
+    📄 04-model-config.png
+    📄 05-skills-config.png
+    📄 06-official-overview.png
+    📄 07-sessions.png
+    📄 08-memorials.png
+    📄 09-templates.png
+    📄 10-morning-briefing.png
+    📄 11-ceremony.png
+    📄 README.md
+    📁 app
+    📄 requirements.txt
+    📄 .env.development
+    📄 Dockerfile
+    📄 index.html
+    📄 nginx.conf
+    📄 package-lock.json
+    📄 package.json
+    📄 postcss.config.js
+    📁 src
+    📄 tailwind.config.js
+    📄 tsconfig.json
+    📄 tsconfig.tsbuildinfo
+    📄 vite.config.ts
+    📄 env.py
+    📄 migrate_json_to_pg.py
+    📄 script.py.mako
+    📁 versions
+    📄 kanban_update_edict.py
+      📄 index-CIswLNpP.css
+      📄 index-CqMbmm5B.js
+      📄 __init__.py
+      📁 api
+      📄 config.py
+      📄 db.py
+      📄 main.py
+      📁 models
+      📁 services
+      📁 workers
+      📄 App.tsx
+      📄 api.ts
+      📁 components
+      📄 index.css
+      📄 main.tsx
+      📄 store.ts
+      📄 vite-env.d.ts
+      📄 001_initial.py
+        📄 __init__.py
+        📄 admin.py
+        📄 agents.py
+        📄 events.py
+        📄 legacy.py
+        📄 tasks.py
+        📄 websocket.py
+        📄 __init__.py
+        📄 event.py
+        📄 task.py
+        📄 thought.py
+        📄 todo.py
+        📄 __init__.py
+        📄 event_bus.py
+        📄 task_service.py
+        📄 __init__.py
+        📄 dispatch_worker.py
+        📄 orchestrator_worker.py
+        📄 ConfirmDialog.tsx
+        📄 CourtCeremony.tsx
+        📄 EdictBoard.tsx
+        📄 MemorialPanel.tsx
+        📄 ModelConfig.tsx
+        📄 MonitorPanel.tsx
+        📄 MorningPanel.tsx
+        📄 OfficialPanel.tsx
+        📄 SessionsPanel.tsx
+        📄 SkillsConfig.tsx
+        📄 TaskModal.tsx
+        📄 TemplatePanel.tsx
+        📄 Toaster.tsx
+```

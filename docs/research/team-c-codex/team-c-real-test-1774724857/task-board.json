@@ -1,0 +1,46 @@
+{
+  "tasks": [
+    {
+      "task_id": "T1",
+      "title": "Evaluate runtime design and protocol fidelity",
+      "owner": "architect",
+      "status": "completed",
+      "depends_on": [],
+      "deliverable": "architect.md",
+      "notes": "Assess team-c runtime against the declared team protocol and identify what is already usable.",
+      "created_at": "2026-03-28T19:07:58.337588+00:00",
+      "updated_at": "2026-03-28T19:11:31.211442+00:00",
+      "plan_status": "not_required",
+      "plan_note": "",
+      "plan_file": ""
+    },
+    {
+      "task_id": "T2",
+      "title": "Attack semantic gaps and misleading equivalence",
+      "owner": "critic",
+      "status": "completed",
+      "depends_on": [],
+      "deliverable": "critic.md",
+      "notes": "Identify where team-c still diverges from Claude agent teams and what claims should be softened.",
+      "created_at": "2026-03-28T19:07:58.338785+00:00",
+      "updated_at": "2026-03-28T19:11:31.211948+00:00",
+      "plan_status": "not_required",
+      "plan_note": "",
+      "plan_file": ""
+    },
+    {
+      "task_id": "T3",
+      "title": "Assess usability, installability, and operational risk",
+      "owner": "qa",
+      "status": "completed",
+      "depends_on": [],
+      "deliverable": "qa.md",
+      "notes": "Focus on real usage friction, install path, runtime dependencies, and missing checks.",
+      "created_at": "2026-03-28T19:07:58.425155+00:00",
+      "updated_at": "2026-03-28T19:11:31.346154+00:00",
+      "plan_status": "not_required",
+      "plan_note": "",
+      "plan_file": ""
+    }
+  ]
+}

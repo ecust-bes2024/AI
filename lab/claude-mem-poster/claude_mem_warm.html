@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>claude-mem 调研报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #F5EFE6;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .container { width: 800px; margin: 0 auto; background: #F5EFE6; }
+        .header { padding: 60px 40px 40px 40px; }
+        .header-tags { display: flex; gap: 8px; margin-bottom: 20px; }
+        .tag { padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+        .tag-blue { background: #D4E4F7; color: #1E5A9E; }
+        .tag-orange { background: #FFE4CC; color: #C85A00; }
+        .header h1 { font-size: 36px; font-weight: 700; color: #1A1A1A; margin-bottom: 12px; line-height: 1.2; }
+        .header .subtitle { font-size: 14px; color: #666; margin-bottom: 8px; }
+        .header .meta { font-size: 12px; color: #999; }
+        .content { padding: 0 40px 40px 40px; }
+        .section { margin-bottom: 40px; }
+        .section-title { font-size: 22px; font-weight: 700; color: #1A1A1A; margin-bottom: 20px; }
+        .card { background: #FFFBF5; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .card-title { font-size: 16px; font-weight: 600; color: #1A1A1A; margin-bottom: 12px; }
+        .card-content { font-size: 14px; color: #4A4A4A; line-height: 1.8; }
+        .card-content ul { margin-left: 20px; margin-top: 8px; }
+        .card-content li { margin-bottom: 6px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+        .stat-card { background: #FFFBF5; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .stat-value { font-size: 32px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px; }
+        .stat-label { font-size: 12px; color: #666; line-height: 1.4; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; margin-right: 6px; margin-bottom: 6px; }
+        .badge-orange { background: #FFE4CC; color: #C85A00; }
+        .badge-blue { background: #D4E4F7; color: #1E5A9E; }
+        .badge-green { background: #D4F4DD; color: #1E7A3E; }
+        .badge-gray { background: #E8E8E8; color: #666; }
+        .quotes-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .quote-card { background: #FFF9F0; border-radius: 12px; padding: 20px; border-left: 3px solid #FFB84D; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .quote-text { font-size: 14px; color: #4A4A4A; line-height: 1.7; margin-bottom: 12px; }
+        .quote-author { font-size: 12px; color: #999; }
+        .footer { background: #F0E8DC; padding: 20px 40px; text-align: center; font-size: 12px; color: #999; }
+        .highlight { background: #FFF4E0; padding: 2px 6px; border-radius: 3px; font-weight: 500; color: #C85A00; }
+        code { background: #F0E8DC; padding: 2px 6px; border-radius: 3px; font-family: "Monaco", "Menlo", "Consolas", monospace; font-size: 13px; color: #C85A00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-tags">
+                <span class="tag tag-blue">调研报告</span>
+                <span class="tag tag-orange">Claude Code Plugin</span>
+            </div>
+            <h1>claude-mem 调研报告</h1>
+            <div class="subtitle">持久化内存压缩系统 · v10.6.2 · 40.7K stars</div>
+            <div class="meta">调研日期：2026-03-26 · 使用 Skill Seekers 预处理</div>
+        </div>
+
+        <div class="content">
+            <!-- 核心信息 -->
+            <div class="section">
+                <div class="section-title">核心信息</div>
+                <div class="card">
+                    <div class="card-content">
+                        <strong>claude-mem</strong> 是 Claude Code 的持久化内存压缩系统，自动捕获工具调用、文件变更、决策，通过 AI 压缩成可搜索记忆，并在未来会话中自动注入相关上下文。
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">40.7K</div>
+                        <div class="stat-label">GitHub Stars</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">v10.6.2</div>
+                        <div class="stat-label">最新版本</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">53%</div>
+                        <div class="stat-label">Token 压缩率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">2540+</div>
+                        <div class="stat-label">测试覆盖</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技术栈 -->
+            <div class="section">
+                <div class="section-title">技术栈</div>
+                <div class="card">
+                    <div class="card-content">
+                        <span class="badge badge-blue">TypeScript 80.7%</span>
+                        <span class="badge badge-blue">JavaScript 13.2%</span>
+                        <span class="badge badge-blue">Bun Runtime</span>
+                        <span class="badge badge-blue">Chroma Vector DB</span>
+                        <span class="badge badge-blue">SQLite + FTS5</span>
+                        <span class="badge badge-blue">Claude Agent SDK</span>
+                        <span class="badge badge-orange">AGPL 3.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 核心价值 -->
+            <div class="section">
+                <div class="section-title">核心价值</div>
+                <div class="card">
+                    <div class="card-title">解决的核心问题</div>
+                    <div class="card-content">
+                        Claude Code 会话结束后上下文丢失，导致每次重新开始都需要重新建立上下文。
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">关键特性</div>
+                    <div class="card-content">
+                        <ul>
+                            <li><strong>自动化捕获</strong>：5 个生命周期 hooks 自动记录所有操作</li>
+                            <li><strong>AI 压缩</strong>：使用 Claude agent-sdk 压缩，v10.6.1 实现 53% token 节省</li>
+                            <li><strong>System Prompt 注入</strong>：v10.6.0+ 通过 <code>before_prompt_build</code> hook 注入，不写 MEMORY.md</li>
+                            <li><strong>60 秒缓存</strong>：每项目缓存，减少重复注入开销</li>
+                            <li><strong>选择性注入</strong>：<code>syncMemoryFileExclude</code> 排除特定 agent</li>
+                            <li><strong>Timeline Reports</strong>：生成项目演进叙事报告</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 值得学习 -->
+            <div class="section">
+                <div class="section-title">值得学习</div>
+                <div class="card">
+                    <div class="card-content">
+                        <ul>
+                            <li><span class="highlight">System Prompt 注入架构</span>：通过 hook + appendSystemContext，不写 MEMORY.md，保持用户控制</li>
+                            <li><span class="highlight">Observations 数据结构</span>：捕获工具调用、文件变更、决策、时间戳，AI 压缩成可搜索记忆</li>
+                            <li><span class="highlight">选择性注入机制</span>：syncMemoryFileExclude 排除噪音 agent，减少 token 消耗</li>
+                            <li><span class="highlight">缓存策略</span>：60 秒/项目平衡新鲜度和性能</li>
+                            <li><span class="highlight">三层检索模式</span>：索引 → 时间线 → 完整细节，10x token 节省</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 不建议复制 -->
+            <div class="section">
+                <div class="section-title">不建议复制</div>
+                <div class="card">
+                    <div class="card-content">
+                        <ul>
+                            <li><strong>Bun runtime</strong>：增加运行时复杂度</li>
+                            <li><strong>Chroma 向量数据库</strong>：如果已有 LanceDB，重复投资</li>
+                            <li><strong>Worker daemon 架构</strong>：独立进程 + HTTP API，复杂度高</li>
+                            <li><strong>Web UI</strong>：localhost:37777 的 React UI，非核心功能</li>
+                            <li><strong>自动捕获所有工具调用</strong>：可能导致高 token 消耗</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 已知问题 -->
+            <div class="section">
+                <div class="section-title">已知问题</div>
+                <div class="card">
+                    <div class="card-content">
+                        <ul>
+                            <li><span class="badge badge-orange">#1488</span> 高 token 消耗（25% token）</li>
+                            <li><span class="badge badge-orange">#1490</span> Worker daemon 反复被杀（版本不匹配）</li>
+                            <li><span class="badge badge-orange">#1489</span> Windows EINVAL 错误</li>
+                            <li><span class="badge badge-orange">#1477</span> 热会话垄断 SDK 池</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 最终建议 -->
+            <div class="section">
+                <div class="section-title">最终建议</div>
+                <div class="quotes-grid">
+                    <div class="quote-card">
+                        <div class="quote-text">
+                            现有记忆系统（MCP memory + Auto memory）已经工作良好，claude-mem 的核心价值（自动捕获工具观察）对当前使用场景可能过重。
+                        </div>
+                        <div class="quote-author">建议动作：仅学习想法</div>
+                    </div>
+                    <div class="quote-card">
+                        <div class="quote-text">
+                            已将关键想法存入 memory，包括 system prompt 注入架构、选择性注入机制、缓存策略、Observations 数据结构。
+                        </div>
+                        <div class="quote-author">落地形式：存储到长期记忆</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skill Seekers 集成 -->
+            <div class="section">
+                <div class="section-title">附加成果</div>
+                <div class="card">
+                    <div class="card-title">Skill Seekers 集成成功</div>
+                    <div class="card-content">
+                        在本次调研中，成功集成 <strong>Skill Seekers v3.2.0</strong> 作为 <code>/learn</code> skill 的预处理引擎。
+                        <ul style="margin-top: 8px;">
+                            <li>支持 17+ 源类型（GitHub、文档站点、PDF、视频等）</li>
+                            <li>输出 16+ 目标格式（Claude、LangChain、LlamaIndex 等）</li>
+                            <li>测试处理 claude-mem 仓库：生成 17KB SKILL.md（500+ 行）</li>
+                            <li>处理时间：~8 分钟（快速模式）</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Generated by Claude Code · 2026-03-26 · Powered by Skill Seekers
+        </div>
+    </div>
+</body>
+</html>
