@@ -122,6 +122,7 @@ Use the runtime mailbox helpers:
 ./scripts/mailbox.sh mail-send <team-name> --sender lead --recipient reviewer --subject "Clarify finding" --body "Check the token refresh path too."
 ./scripts/mailbox.sh mail-send <team-name> --sender reviewer --recipient architect --subject "Need interface detail" --body "Which adapter owns session rotation?"
 ./scripts/mailbox.sh ask-lead <team-name> --sender reviewer --subject "Need approval" --body "Can I widen the task scope?"
+./scripts/mailbox.sh lead-triage <team-name> --task-id T2
 ./scripts/mailbox.sh mail-pop <team-name> --recipient lead
 ./scripts/mailbox.sh mail-ack <team-name> ACK-1
 ./scripts/mailbox.sh mail-resolve <team-name> M2
@@ -130,6 +131,13 @@ Use the runtime mailbox helpers:
 Lead-side handling guidance for `ask-lead` lives in:
 
 - [references/lead-ask-triage.md](references/lead-ask-triage.md)
+
+Task ownership changes also emit `task_assignment` mailbox entries, so assignment is visible in shared artifacts instead of living only in the task board.
+
+`lead-triage` now also:
+
+- writes a triage note into the related task when `--task-id` is provided or a `T<number>` reference can be inferred from the ask
+- emits `lead_broadcast` mailbox updates for `approval` and `routing` buckets so shared execution changes are visible to the team
 
 ### 5. Plan approval
 
@@ -143,9 +151,12 @@ When used, the lead must define explicit approval criteria such as:
 
 Do not start implementation before plan approval is granted.
 
+If you want Claude Code-style leader-side auto-approval semantics, initialize the team with `--leader-plan-approval auto`. That keeps the request/response trail in artifacts while letting the lead runtime auto-approve teammate plan requests.
+
 Use the runtime plan flow:
 
 ```bash
+./scripts/init-team.sh my-team --lead lead --mode in-process --teammate architect --leader-plan-approval auto
 ./scripts/task-board.sh plan-request <team-name> T2 ./plans/auth-plan.md --note "Ready for lead review"
 ./scripts/task-board.sh plan-approve <team-name> T2 --note "Approved if tests remain in scope"
 ./scripts/task-board.sh plan-reject <team-name> T2 --note "Reduce database blast radius"
@@ -220,7 +231,7 @@ By default it writes a disposable validation run under:
 ### Create a team
 
 ```bash
-./scripts/init-team.sh my-team --lead lead --mode in-process --teammate architect:architect::true --teammate reviewer --teammate qa --require-plan-approval
+./scripts/init-team.sh my-team --lead lead --mode in-process --teammate architect:architect::true --teammate reviewer --teammate qa --require-plan-approval --leader-plan-approval auto
 ```
 
 Teammate format:

@@ -6,8 +6,9 @@ This file maps Claude `agent teams` semantics to the current `team-c` runtime.
 |---|---|
 | shared task list | `docs/research/team-c-codex/<team>/task-board.json` + `task-board.md` |
 | teammate direct messaging | `docs/research/team-c-codex/<team>/mailbox.jsonl` + `mailbox.md` |
+| lead ask triage | `ask-lead` + `lead-triage` with triage bucket + lead reply artifact + task note/broadcast linkage |
 | lead/teammate lifecycle | `docs/research/team-c-codex/<team>/team.json` teammate states + lifecycle commands |
-| plan approval | `plan-request`, `plan-approve`, `plan-reject` |
+| plan approval | `plan-request`, `plan-approve`, `plan-reject`, optional `--leader-plan-approval auto` |
 | cleanup semantics | `cleanup` command, blocked while teammates are active |
 | in-process display | `display.py watch` dashboard |
 | split panes | `start-split-panes.sh` using tmux |
@@ -26,7 +27,11 @@ What is implemented:
 - explicit coordination artifacts
 - explicit cleanup checks
 - explicit mailbox entries
+- explicit lead ask triage trail
+- task assignment mailbox events on owner changes
+- triage-linked task notes and shared lead broadcasts for approval/routing
 - explicit plan states
+- optional leader-side auto plan approval with request/response mailbox trail
 - explicit dashboard rendering
 
 What is still emulated rather than native:

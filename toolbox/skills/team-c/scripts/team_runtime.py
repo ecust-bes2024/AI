@@ -7,6 +7,7 @@ import contextlib
 import fcntl
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -22,8 +23,9 @@ DEFAULT_BASE = Path("docs") / "research" / "team-c-codex"
 LAB_HOOK_DISPATCH = Path("/Users/jerry_hu/AI/toolbox/skills/hooks-codex/scripts/lab-dispatch.sh")
 VALID_TASK_STATUSES = {"pending", "in_progress", "completed"}
 VALID_PLAN_STATUSES = {"not_required", "required", "requested", "approved", "rejected"}
-ACTIVE_TEAMMATE_STATES = {"active", "planning", "working", "idle"}
+ACTIVE_TEAMMATE_STATES = {"active", "planning", "awaiting_approval", "working", "idle"}
 STOPPED_TEAMMATE_STATES = {"stopped", "shutdown", "completed"}
+VALID_TEAMMATE_STATES = ACTIVE_TEAMMATE_STATES | STOPPED_TEAMMATE_STATES
 
 
 def now_iso() -> str:
@@ -156,6 +158,42 @@ def append_mailbox(paths: TeamPaths, message: dict[str, Any]) -> None:
     render_mailbox(paths)
 
 
+def make_mailbox_message(
+    sequence: int,
+    sender: str,
+    recipient: str,
+    subject: str,
+    body: str,
+    kind: str = "message",
+) -> dict[str, Any]:
+    return {
+        "message_id": f"M{sequence}",
+        "sender": sender,
+        "recipient": recipient,
+        "subject": subject,
+        "body": body,
+        "sent_at": now_iso(),
+        "status": "open",
+        "ack_token": f"ACK-{sequence}",
+        "kind": kind,
+    }
+
+
+def append_mailbox_message(
+    paths: TeamPaths,
+    sender: str,
+    recipient: str,
+    subject: str,
+    body: str,
+    kind: str = "message",
+) -> dict[str, Any]:
+    existing = read_mailbox(paths)
+    next_id = len(existing) + 1
+    message = make_mailbox_message(next_id, sender, recipient, subject, body, kind=kind)
+    append_mailbox(paths, message)
+    return message
+
+
 def save_mailbox(paths: TeamPaths, messages: list[dict[str, Any]]) -> None:
     paths.mailbox_jsonl.write_text(
         "".join(json.dumps(message, ensure_ascii=False) + "\n" for message in messages),
@@ -246,9 +284,152 @@ def find_teammate(manifest: dict[str, Any], teammate_id: str) -> dict[str, Any]:
     raise SystemExit(f"Teammate not found: {teammate_id}")
 
 
+def find_teammate_or_none(manifest: dict[str, Any], teammate_id: str | None) -> dict[str, Any] | None:
+    if not teammate_id:
+        return None
+    for teammate in manifest.get("teammates", []):
+        if teammate["id"] == teammate_id:
+            return teammate
+    return None
+
+
 def validate_status(status: str, allowed: set[str], label: str) -> None:
     if status not in allowed:
         raise SystemExit(f"Invalid {label}: {status}. Allowed: {', '.join(sorted(allowed))}")
+
+
+def update_teammate_state(manifest: dict[str, Any], teammate_id: str | None, state: str, note: str | None = None) -> None:
+    teammate = find_teammate_or_none(manifest, teammate_id)
+    if teammate is None:
+        return
+    validate_status(state, VALID_TEAMMATE_STATES, "teammate state")
+    teammate["state"] = state
+    teammate["updated_at"] = now_iso()
+    if note is not None:
+        teammate["notes"] = note
+
+
+def is_auto_plan_approval_enabled(manifest: dict[str, Any]) -> bool:
+    settings = manifest.get("settings", {})
+    return settings.get("leader_plan_approval_mode", "manual") == "auto"
+
+
+def build_plan_request_body(task: dict[str, Any], relative_plan_path: str, note: str) -> str:
+    lines = [
+        f"task: `{task['task_id']}`",
+        f"title: {task['title']}",
+        f"owner: `{task.get('owner') or '-'}`",
+        f"plan_file: `{relative_plan_path}`",
+    ]
+    if note:
+        lines.append(f"note: {note}")
+    return "\n".join(lines)
+
+
+def build_plan_response_body(task: dict[str, Any], approved: bool, note: str) -> str:
+    decision = "approved" if approved else "rejected"
+    lines = [
+        f"task: `{task['task_id']}`",
+        f"decision: `{decision}`",
+    ]
+    if note:
+        lines.append(f"note: {note}")
+    return "\n".join(lines)
+
+
+def build_task_assignment_body(task: dict[str, Any], sender: str) -> str:
+    lines = [
+        f"task: `{task['task_id']}`",
+        f"title: {task['title']}",
+        f"assigned_by: `{sender}`",
+        f"status: `{task['status']}`",
+    ]
+    if task.get("deliverable"):
+        lines.append(f"deliverable: `{task['deliverable']}`")
+    if task.get("notes"):
+        lines.append(f"notes: {task['notes']}")
+    return "\n".join(lines)
+
+
+def classify_lead_request(subject: str, body: str) -> str:
+    text = f"{subject}\n{body}".lower()
+    escalation_terms = ("blocker", "blocked", "escalate", "human", "conflict", "stop")
+    approval_terms = ("approve", "approval", "scope", "permission", "accept", "plan")
+    routing_terms = ("who owns", "owner", "route", "routing", "broadcast", "relay")
+    if any(term in text for term in escalation_terms):
+        return "escalation"
+    if any(term in text for term in approval_terms):
+        return "approval"
+    if any(term in text for term in routing_terms):
+        return "routing"
+    return "clarification"
+
+
+def build_lead_triage_body(bucket: str, message: dict[str, Any]) -> str:
+    base_lines = [
+        f"source_message: `{message['message_id']}`",
+        f"bucket: `{bucket}`",
+    ]
+    if bucket == "approval":
+        base_lines.append(
+            "lead_decision: Approved within current task boundaries. Update shared artifacts before widening scope."
+        )
+    elif bucket == "routing":
+        base_lines.append(
+            "lead_decision: Route through the owning teammate or update the task board before continuing."
+        )
+    elif bucket == "escalation":
+        base_lines.append(
+            "lead_decision: Pause downstream work and escalate to the human partner."
+        )
+    else:
+        base_lines.append(
+            "lead_decision: Proceed with the narrowest interpretation that preserves current task boundaries."
+        )
+    base_lines.append(f"subject: {message['subject']}")
+    return "\n".join(base_lines)
+
+
+def append_summary_note(paths: TeamPaths, heading: str, bullet: str) -> None:
+    summary = paths.summary_md.read_text(encoding="utf-8") if paths.summary_md.exists() else "# Lead Summary\n\n"
+    marker = f"## {heading}\n"
+    if marker not in summary:
+        summary = summary.rstrip() + f"\n\n{marker}\n"
+    if bullet not in summary:
+        summary = summary.rstrip() + f"\n- {bullet}\n"
+    paths.summary_md.write_text(summary, encoding="utf-8")
+
+
+def infer_task_id(board: dict[str, Any], text: str, explicit_task_id: str = "") -> str:
+    if explicit_task_id:
+        return explicit_task_id
+    matches = re.findall(r"\bT\d+\b", text, flags=re.IGNORECASE)
+    task_ids = {task["task_id"] for task in board.get("tasks", [])}
+    for candidate in matches:
+        normalized = candidate.upper()
+        if normalized in task_ids:
+            return normalized
+    return ""
+
+
+def append_task_note(task: dict[str, Any], note: str) -> None:
+    existing_notes = task.get("notes", "").strip()
+    notes = [line for line in existing_notes.splitlines() if line.strip()] if existing_notes else []
+    if note not in notes:
+        notes.append(note)
+    task["notes"] = "\n".join(notes)
+    task["updated_at"] = now_iso()
+
+
+def build_lead_broadcast_body(bucket: str, message: dict[str, Any], task_id: str) -> str:
+    lines = [
+        f"source_message: `{message['message_id']}`",
+        f"bucket: `{bucket}`",
+    ]
+    if task_id:
+        lines.append(f"task: `{task_id}`")
+    lines.append(f"subject: {message['subject']}")
+    return "\n".join(lines)
 
 
 def write_summary_stub(paths: TeamPaths, manifest: dict[str, Any]) -> None:
@@ -447,6 +628,7 @@ def command_init(args: argparse.Namespace) -> int:
         "teammates": teammates,
         "settings": {
             "plan_approval_default": args.require_plan_approval,
+            "leader_plan_approval_mode": args.leader_plan_approval,
         },
         "cleanup": {
             "cleaned_at": None,
@@ -525,6 +707,15 @@ def command_task_add(args: argparse.Namespace) -> int:
         }
         board["tasks"].append(task)
         save_task_board(paths, board)
+        if owner:
+            append_mailbox_message(
+                paths,
+                manifest["lead"]["id"],
+                owner,
+                f"Task assigned: {task['task_id']}",
+                build_task_assignment_body(task, manifest["lead"]["id"]),
+                kind="task_assignment",
+            )
     print(task["task_id"])
     return 0
 
@@ -535,6 +726,7 @@ def command_task_update(args: argparse.Namespace) -> int:
         board = load_task_board(paths)
         manifest = load_manifest(paths)
         task = find_task(board, args.task_id)
+        previous_owner = task.get("owner") or ""
         previous_status = task["status"]
         if args.owner is not None:
             task["owner"] = slugify(args.owner) if args.owner else ""
@@ -559,12 +751,36 @@ def command_task_update(args: argparse.Namespace) -> int:
                     addition = f"[hook] {hook_result['additionalContext']}"
                     task["notes"] = f"{existing_notes}\n{addition}".strip()
             task["status"] = args.status
+            if args.status == "in_progress":
+                update_teammate_state(
+                    manifest,
+                    task.get("owner"),
+                    "working",
+                    f"working on {task['task_id']}",
+                )
+            elif args.status == "completed":
+                update_teammate_state(
+                    manifest,
+                    task.get("owner"),
+                    "idle",
+                    f"completed {task['task_id']}",
+                )
         if args.notes is not None:
             task["notes"] = args.notes
         if args.deliverable is not None:
             task["deliverable"] = args.deliverable
         task["updated_at"] = now_iso()
         save_task_board(paths, board)
+        if task.get("owner") and task["owner"] != previous_owner:
+            append_mailbox_message(
+                paths,
+                manifest["lead"]["id"],
+                task["owner"],
+                f"Task assigned: {task['task_id']}",
+                build_task_assignment_body(task, manifest["lead"]["id"]),
+                kind="task_assignment",
+            )
+        save_manifest(paths, manifest)
     return 0
 
 
@@ -586,6 +802,8 @@ def command_task_claim(args: argparse.Namespace) -> int:
         task["status"] = "in_progress"
         task["updated_at"] = now_iso()
         save_task_board(paths, board)
+        update_teammate_state(manifest, teammate["id"], "working", f"claimed {task['task_id']}")
+        save_manifest(paths, manifest)
     print(task["task_id"])
     return 0
 
@@ -613,6 +831,8 @@ def command_task_claim_next(args: argparse.Namespace) -> int:
         task["status"] = "in_progress"
         task["updated_at"] = now_iso()
         save_task_board(paths, board)
+        update_teammate_state(manifest, teammate["id"], "working", f"claimed {task['task_id']}")
+        save_manifest(paths, manifest)
     print(task["task_id"])
     return 0
 
@@ -624,14 +844,52 @@ def command_plan_request(args: argparse.Namespace) -> int:
         raise SystemExit(f"Plan file not found: {plan_file}")
     with team_lock(paths):
         board = load_task_board(paths)
+        manifest = load_manifest(paths)
         task = find_task(board, args.task_id)
         target = paths.approvals_dir / f"{task['task_id']}-plan.md"
         shutil.copyfile(plan_file, target)
+        relative_plan_path = str(target.relative_to(paths.team_dir))
         task["plan_status"] = "requested"
-        task["plan_file"] = str(target.relative_to(paths.team_dir))
+        task["plan_file"] = relative_plan_path
         task["plan_note"] = args.note or ""
         task["updated_at"] = now_iso()
+        update_teammate_state(
+            manifest,
+            task.get("owner"),
+            "awaiting_approval",
+            f"awaiting approval for {task['task_id']}",
+        )
+
+        append_mailbox_message(
+            paths,
+            task.get("owner") or "system",
+            manifest["lead"]["id"],
+            f"Plan approval requested for {task['task_id']}",
+            build_plan_request_body(task, relative_plan_path, args.note or ""),
+            kind="plan_approval_request",
+        )
+
+        if is_auto_plan_approval_enabled(manifest):
+            task["plan_status"] = "approved"
+            auto_note = args.note or "Auto-approved by team lead"
+            task["plan_note"] = auto_note
+            update_teammate_state(
+                manifest,
+                task.get("owner"),
+                "working",
+                f"plan approved for {task['task_id']}",
+            )
+            if task.get("owner"):
+                append_mailbox_message(
+                    paths,
+                    manifest["lead"]["id"],
+                    task["owner"],
+                    f"Plan approved for {task['task_id']}",
+                    build_plan_response_body(task, approved=True, note=auto_note),
+                    kind="plan_approval_response",
+                )
         save_task_board(paths, board)
+        save_manifest(paths, manifest)
     print(target)
     return 0
 
@@ -640,11 +898,28 @@ def command_plan_decide(args: argparse.Namespace, approved: bool) -> int:
     paths = resolve_team_dir(Path(args.base), args.team_name)
     with team_lock(paths):
         board = load_task_board(paths)
+        manifest = load_manifest(paths)
         task = find_task(board, args.task_id)
         task["plan_status"] = "approved" if approved else "rejected"
         task["plan_note"] = args.note or ""
         task["updated_at"] = now_iso()
+        update_teammate_state(
+            manifest,
+            task.get("owner"),
+            "working" if approved else "planning",
+            f"plan {'approved' if approved else 'rejected'} for {task['task_id']}",
+        )
+        if task.get("owner"):
+            append_mailbox_message(
+                paths,
+                manifest["lead"]["id"],
+                task["owner"],
+                f"Plan {'approved' if approved else 'rejected'} for {task['task_id']}",
+                build_plan_response_body(task, approved=approved, note=args.note or ""),
+                kind="plan_approval_response",
+            )
         save_task_board(paths, board)
+        save_manifest(paths, manifest)
     return 0
 
 
@@ -660,27 +935,18 @@ def command_mailbox_send(args: argparse.Namespace) -> int:
         if args.recipient == "broadcast":
             recipients = [teammate["id"] for teammate in manifest.get("teammates", [])]
 
-        existing = read_mailbox(paths)
-        next_id = len(existing) + 1
         for recipient in recipients:
             if recipient != "lead":
                 if recipient != manifest["lead"]["id"]:
                     find_teammate(manifest, recipient)
-            append_mailbox(
+            append_mailbox_message(
                 paths,
-                {
-                    "message_id": f"M{next_id}",
-                    "sender": sender,
-                    "recipient": recipient,
-                    "subject": args.subject,
-                    "body": args.body,
-                    "sent_at": now_iso(),
-                    "status": "open",
-                    "ack_token": f"ACK-{next_id}",
-                    "kind": getattr(args, "kind", "message"),
-                },
+                sender,
+                recipient,
+                args.subject,
+                args.body,
+                kind=getattr(args, "kind", "message"),
             )
-            next_id += 1
     return 0
 
 
@@ -688,6 +954,90 @@ def command_ask_lead(args: argparse.Namespace) -> int:
     args.recipient = "lead"
     args.kind = "ask_lead"
     return command_mailbox_send(args)
+
+
+def command_lead_triage(args: argparse.Namespace) -> int:
+    paths = resolve_team_dir(Path(args.base), args.team_name)
+    with team_lock(paths):
+        manifest = load_manifest(paths)
+        messages = read_mailbox(paths)
+        board = load_task_board(paths)
+        candidates = []
+        for message in messages:
+            if message.get("recipient") != manifest["lead"]["id"]:
+                continue
+            if message.get("kind") != "ask_lead":
+                continue
+            if message.get("status") not in {"open", "acked"}:
+                continue
+            if args.message_id and message["message_id"] != args.message_id:
+                continue
+            candidates.append(message)
+        if not candidates:
+            print(json.dumps({"triaged": []}, ensure_ascii=False, indent=2))
+            return 0
+
+        next_id = len(messages) + 1
+        triaged = []
+        for message in candidates[: args.limit]:
+            bucket = classify_lead_request(message.get("subject", ""), message.get("body", ""))
+            task_id = infer_task_id(
+                board,
+                f"{message.get('subject', '')}\n{message.get('body', '')}",
+                explicit_task_id=args.task_id,
+            )
+            if task_id:
+                task = find_task(board, task_id)
+                append_task_note(
+                    task,
+                    f"[lead-triage {message['message_id']}] bucket={bucket}",
+                )
+            reply = make_mailbox_message(
+                next_id,
+                manifest["lead"]["id"],
+                message["sender"],
+                f"Lead triage: {bucket} for {message['message_id']}",
+                build_lead_triage_body(bucket, message),
+                kind="lead_triage",
+            )
+            next_id += 1
+            messages.append(reply)
+            message["status"] = "resolved"
+            message["resolved_at"] = now_iso()
+            message["triage_bucket"] = bucket
+            message["resolution_message_id"] = reply["message_id"]
+            if task_id:
+                message["related_task_id"] = task_id
+            triaged.append(
+                {
+                    "message_id": message["message_id"],
+                    "bucket": bucket,
+                    "reply_message_id": reply["message_id"],
+                    "task_id": task_id,
+                }
+            )
+            append_summary_note(
+                paths,
+                "Lead Ask Triage",
+                f"{message['message_id']} -> {bucket} -> {reply['message_id']}" + (f" ({task_id})" if task_id else ""),
+            )
+            if bucket in {"approval", "routing"}:
+                for teammate in manifest.get("teammates", []):
+                    broadcast = make_mailbox_message(
+                        next_id,
+                        manifest["lead"]["id"],
+                        teammate["id"],
+                        f"Lead update: {bucket}",
+                        build_lead_broadcast_body(bucket, message, task_id),
+                        kind="lead_broadcast",
+                    )
+                    next_id += 1
+                    messages.append(broadcast)
+
+        save_task_board(paths, board)
+        save_mailbox(paths, messages)
+    print(json.dumps({"triaged": triaged}, ensure_ascii=False, indent=2))
+    return 0
 
 
 def command_reply_lead(args: argparse.Namespace) -> int:
@@ -707,21 +1057,13 @@ def command_reply_lead(args: argparse.Namespace) -> int:
                 "body": args.body,
             },
         )
-        existing = read_mailbox(paths)
-        next_id = len(existing) + 1
-        append_mailbox(
+        append_mailbox_message(
             paths,
-            {
-                "message_id": f"M{next_id}",
-                "sender": manifest["lead"]["id"],
-                "recipient": recipient,
-                "subject": args.subject,
-                "body": args.body,
-                "sent_at": now_iso(),
-                "status": "open",
-                "ack_token": f"ACK-{next_id}",
-                "kind": "lead_reply",
-            },
+            manifest["lead"]["id"],
+            recipient,
+            args.subject,
+            args.body,
+            kind="lead_reply",
         )
         if hook_result.get("additionalContext"):
             note = f"[lead_reply hook] {hook_result['additionalContext']}"
@@ -812,6 +1154,7 @@ def command_lifecycle_set(args: argparse.Namespace) -> int:
     with team_lock(paths):
         manifest = load_manifest(paths)
         teammate = find_teammate(manifest, slugify(args.teammate))
+        validate_status(args.state, VALID_TEAMMATE_STATES, "teammate state")
         teammate["state"] = args.state
         teammate["updated_at"] = now_iso()
         save_manifest(paths, manifest)
@@ -869,6 +1212,7 @@ def build_parser() -> argparse.ArgumentParser:
     init_parser.add_argument("--teammate", action="append", default=[], help="role[:id[:model[:worktree]]]")
     init_parser.add_argument("--repo", default="", help="Optional git repository root used when any teammate sets worktree=true")
     init_parser.add_argument("--require-plan-approval", action="store_true")
+    init_parser.add_argument("--leader-plan-approval", default="manual", choices=["manual", "auto"])
     init_parser.add_argument("--force", action="store_true")
     init_parser.set_defaults(handler=command_init)
 
@@ -943,6 +1287,13 @@ def build_parser() -> argparse.ArgumentParser:
     reply_lead_parser.add_argument("--subject", required=True)
     reply_lead_parser.add_argument("--body", required=True)
     reply_lead_parser.set_defaults(handler=command_reply_lead)
+
+    triage_parser = subparsers.add_parser("lead-triage")
+    triage_parser.add_argument("team_name")
+    triage_parser.add_argument("--message-id", default="")
+    triage_parser.add_argument("--task-id", default="")
+    triage_parser.add_argument("--limit", type=int, default=20)
+    triage_parser.set_defaults(handler=command_lead_triage)
 
     resolve_parser = subparsers.add_parser("mail-resolve")
     resolve_parser.add_argument("team_name")

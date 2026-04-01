@@ -1,0 +1,2 @@
+{"message_id": "M1", "sender": "reviewer", "recipient": "lead", "subject": "Plan approval requested for T1", "body": "task: `T1`\ntitle: Review runtime\nowner: `reviewer`\nplan_file: `approvals/T1-plan.md`\nnote: ready", "sent_at": "2026-04-01T02:46:41.793883+00:00", "status": "open", "kind": "plan_approval_request"}
+{"message_id": "M2", "sender": "lead", "recipient": "reviewer", "subject": "Plan approved for T1", "body": "task: `T1`\ndecision: `approved`\nnote: ready", "sent_at": "2026-04-01T02:46:41.794263+00:00", "status": "open", "kind": "plan_approval_response"}

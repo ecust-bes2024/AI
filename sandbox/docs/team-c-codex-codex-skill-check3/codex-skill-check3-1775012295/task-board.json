@@ -1,0 +1,18 @@
+{
+  "tasks": [
+    {
+      "task_id": "T1",
+      "title": "Review runtime",
+      "owner": "qa",
+      "status": "pending",
+      "depends_on": [],
+      "deliverable": "",
+      "notes": "[lead-triage M3] bucket=approval",
+      "created_at": "2026-04-01T02:58:15.982162+00:00",
+      "updated_at": "2026-04-01T02:58:16.124402+00:00",
+      "plan_status": "required",
+      "plan_note": "",
+      "plan_file": ""
+    }
+  ]
+}

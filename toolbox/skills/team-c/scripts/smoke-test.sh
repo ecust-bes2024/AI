@@ -33,7 +33,8 @@ python3 "${SCRIPT_DIR}/team_runtime.py" --base "${BASE_DIR}" init "${TEAM_NAME}"
   --teammate architect:architect::true \
   --teammate reviewer \
   --teammate qa \
-  --require-plan-approval >/dev/null
+  --require-plan-approval \
+  --leader-plan-approval auto >/dev/null
 
 cat > "${TEAM_DIR}/sample-plan.md" <<'EOF'
 # Smoke Plan
@@ -45,6 +46,8 @@ EOF
 TASK1="$("${SCRIPT_DIR}/task-board.sh" --base "${BASE_DIR}" task-add "${TEAM_NAME}" "Review auth flow" --owner reviewer --deliverable reviewer.md --require-plan)"
 TASK2="$("${SCRIPT_DIR}/task-board.sh" --base "${BASE_DIR}" task-add "${TEAM_NAME}" "Assess architecture" --owner architect --deliverable architect.md)"
 TASK3="$("${SCRIPT_DIR}/task-board.sh" --base "${BASE_DIR}" task-add "${TEAM_NAME}" "Unassigned follow-up" --deliverable followup.md)"
+
+"${SCRIPT_DIR}/task-board.sh" --base "${BASE_DIR}" task-update "${TEAM_NAME}" "${TASK2}" --owner qa >/dev/null
 
 CLAIMED="$("${SCRIPT_DIR}/task-board.sh" --base "${BASE_DIR}" task-claim-next "${TEAM_NAME}" qa)"
 if [[ "${CLAIMED}" != "${TASK3}" ]]; then
@@ -61,7 +64,7 @@ fi
 "${SCRIPT_DIR}/mailbox.sh" --base "${BASE_DIR}" ask-lead "${TEAM_NAME}" \
   --sender reviewer \
   --subject "Need approval" \
-  --body "Can I widen the review scope?" >/dev/null
+  --body "Can I widen the review scope for ${TASK1}?" >/dev/null
 
 POP_JSON="$("${SCRIPT_DIR}/mailbox.sh" --base "${BASE_DIR}" mail-pop "${TEAM_NAME}" --recipient lead)"
 ACK_TOKEN="$(printf '%s' "${POP_JSON}" | python3 -c 'import json,sys; payload=sys.stdin.read(); data=json.loads(payload) if payload.strip() else {}; messages=data.get("messages", []); print(messages[0]["ack_token"] if messages else "")')"
@@ -72,9 +75,55 @@ if [[ -z "${ACK_TOKEN}" ]]; then
 fi
 
 "${SCRIPT_DIR}/mailbox.sh" --base "${BASE_DIR}" mail-ack "${TEAM_NAME}" "${ACK_TOKEN}" >/dev/null
+"${SCRIPT_DIR}/mailbox.sh" --base "${BASE_DIR}" lead-triage "${TEAM_NAME}" --task-id "${TASK1}" >/dev/null
 
 "${SCRIPT_DIR}/task-board.sh" --base "${BASE_DIR}" plan-request "${TEAM_NAME}" "${TASK1}" "${TEAM_DIR}/sample-plan.md" --note "Ready for review" >/dev/null
-"${SCRIPT_DIR}/task-board.sh" --base "${BASE_DIR}" plan-approve "${TEAM_NAME}" "${TASK1}" --note "Approved" >/dev/null
+
+PLAN_STATUS="$(python3 - <<PY
+import json
+from pathlib import Path
+board = json.loads(Path("${TEAM_DIR}/task-board.json").read_text())
+task = next(task for task in board["tasks"] if task["task_id"] == "${TASK1}")
+print(task["plan_status"])
+PY
+)"
+
+if [[ "${PLAN_STATUS}" != "approved" ]]; then
+  echo "FAIL auto-approved plan status was ${PLAN_STATUS}, expected approved"
+  exit 1
+fi
+
+PLAN_RESPONSES="$(python3 - <<PY
+import json
+from pathlib import Path
+lines = [json.loads(line) for line in Path("${TEAM_DIR}/mailbox.jsonl").read_text().splitlines() if line.strip()]
+count = sum(1 for line in lines if line.get("kind") == "plan_approval_response")
+print(count)
+PY
+)"
+
+if [[ "${PLAN_RESPONSES}" -lt 1 ]]; then
+  echo "FAIL expected at least one plan_approval_response mailbox entry"
+  exit 1
+fi
+
+python3 - <<PY
+import json
+from pathlib import Path
+team_dir = Path("${TEAM_DIR}")
+board = json.loads((team_dir / "task-board.json").read_text())
+lines = [json.loads(line) for line in Path("${TEAM_DIR}/mailbox.jsonl").read_text().splitlines() if line.strip()]
+assert any(line.get("kind") == "task_assignment" and line.get("recipient") == "qa" for line in lines), lines
+asks = [line for line in lines if line.get("kind") == "ask_lead"]
+assert asks, lines
+assert all(line.get("status") == "resolved" for line in asks), asks
+assert any(line.get("kind") == "lead_triage" and line.get("recipient") == "reviewer" for line in lines), lines
+assert any(line.get("kind") == "lead_broadcast" and line.get("recipient") == "qa" for line in lines), lines
+task = next(task for task in board["tasks"] if task["task_id"] == "${TASK1}")
+assert "[lead-triage" in task.get("notes", ""), task
+print("mailbox extensions ok")
+PY
+
 "${SCRIPT_DIR}/lifecycle.sh" --base "${BASE_DIR}" heartbeat "${TEAM_NAME}" reviewer --note "Smoke review started" >/dev/null
 
 if "${SCRIPT_DIR}/lifecycle.sh" --base "${BASE_DIR}" cleanup "${TEAM_NAME}" >/dev/null 2>&1; then
@@ -111,6 +160,8 @@ fi
 echo "OK   created tasks: ${TASK1}, ${TASK2}"
 echo "OK   claim-next returned: ${CLAIMED}"
 echo "OK   lead ack token: ${ACK_TOKEN}"
+echo "OK   auto-approved plan status: ${PLAN_STATUS}"
+echo "OK   assignment and ask-lead triage mailbox paths passed"
 echo "OK   worktree lifecycle passed"
 echo "OK   artifacts written under: ${TEAM_DIR}"
 echo "Smoke test passed."
