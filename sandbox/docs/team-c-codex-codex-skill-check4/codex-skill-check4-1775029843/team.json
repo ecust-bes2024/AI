@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "protocol": "team-c",
+  "team_name": "codex-skill-check4-1775029843",
+  "display_name": "codex-skill-check4-1775029843",
+  "created_at": "2026-04-01T07:50:43.109483+00:00",
+  "mode": "in-process",
+  "lead": {
+    "id": "lead",
+    "role": "team-lead",
+    "state": "active"
+  },
+  "teammates": [
+    {
+      "id": "reviewer",
+      "role": "reviewer",
+      "model": "",
+      "state": "planning",
+      "created_at": "2026-04-01T07:50:43.109213+00:00",
+      "artifact": "reviewer.md",
+      "notes": "plan approved for T1",
+      "updated_at": "2026-04-01T07:50:43.395237+00:00",
+      "last_heartbeat_at": "2026-04-01T07:50:43.395090+00:00"
+    },
+    {
+      "id": "qa",
+      "role": "qa",
+      "model": "",
+      "state": "working",
+      "created_at": "2026-04-01T07:50:43.109476+00:00",
+      "artifact": "qa.md",
+      "notes": "assignment synced for T2",
+      "updated_at": "2026-04-01T07:50:43.440804+00:00",
+      "last_heartbeat_at": "2026-04-01T07:50:43.440926+00:00"
+    }
+  ],
+  "settings": {
+    "plan_approval_default": true,
+    "leader_plan_approval_mode": "auto"
+  },
+  "cleanup": {
+    "cleaned_at": null
+  }
+}

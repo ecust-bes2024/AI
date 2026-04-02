@@ -421,6 +421,163 @@ def append_task_note(task: dict[str, Any], note: str) -> None:
     task["updated_at"] = now_iso()
 
 
+def extract_tagged_value(text: str, field: str) -> str:
+    match = re.search(rf"^{re.escape(field)}:\s*`?([^\n`]+)`?", text, flags=re.MULTILINE)
+    return match.group(1).strip() if match else ""
+
+
+def add_dependency(task: dict[str, Any], dependency_id: str) -> None:
+    deps = [dep for dep in task.get("depends_on", []) if dep]
+    if dependency_id not in deps:
+        deps.append(dependency_id)
+    task["depends_on"] = deps
+    task["updated_at"] = now_iso()
+
+
+def remove_dependency(task: dict[str, Any], dependency_id: str) -> None:
+    task["depends_on"] = [dep for dep in task.get("depends_on", []) if dep != dependency_id]
+    task["updated_at"] = now_iso()
+
+
+def unresolved_dependencies(board: dict[str, Any], task: dict[str, Any]) -> list[str]:
+    blockers = []
+    for dep in task.get("depends_on", []):
+        if find_task(board, dep)["status"] != "completed":
+            blockers.append(dep)
+    return blockers
+
+
+def apply_task_rule_updates(
+    manifest: dict[str, Any],
+    board: dict[str, Any],
+    task: dict[str, Any],
+    *,
+    owner: str = "",
+    status: str = "",
+    add_depends_on: list[str] | None = None,
+    remove_depends_on: list[str] | None = None,
+    clear_depends_on: bool = False,
+) -> list[str]:
+    changes: list[str] = []
+    if owner:
+        owner_id = slugify(owner)
+        find_teammate(manifest, owner_id)
+        if task.get("owner") != owner_id:
+            task["owner"] = owner_id
+            changes.append(f"owner={owner_id}")
+    if status:
+        validate_status(status, VALID_TASK_STATUSES, "task status")
+        if task.get("status") != status:
+            task["status"] = status
+            changes.append(f"status={status}")
+    if clear_depends_on and task.get("depends_on"):
+        task["depends_on"] = []
+        changes.append("depends_on=cleared")
+    for dep in add_depends_on or []:
+        normalized = dep.strip().upper()
+        if not normalized:
+            continue
+        find_task(board, normalized)
+        before = list(task.get("depends_on", []))
+        add_dependency(task, normalized)
+        if task.get("depends_on", []) != before:
+            changes.append(f"depends_on+={normalized}")
+    for dep in remove_depends_on or []:
+        normalized = dep.strip().upper()
+        if not normalized:
+            continue
+        before = list(task.get("depends_on", []))
+        remove_dependency(task, normalized)
+        if task.get("depends_on", []) != before:
+            changes.append(f"depends_on-={normalized}")
+    if changes:
+        task["updated_at"] = now_iso()
+    return changes
+
+
+def sync_message_to_artifacts(
+    manifest: dict[str, Any],
+    board: dict[str, Any],
+    recipient: str,
+    message: dict[str, Any],
+) -> dict[str, Any]:
+    action = {
+        "message_id": message["message_id"],
+        "kind": message.get("kind", "message"),
+        "task_id": "",
+        "changes": [],
+    }
+    task_id = infer_task_id(board, f"{message.get('subject', '')}\n{message.get('body', '')}")
+    if task_id:
+        action["task_id"] = task_id
+    kind = message.get("kind", "message")
+
+    if kind == "task_assignment" and task_id:
+        task = find_task(board, task_id)
+        if task.get("owner") == recipient:
+            blockers = unresolved_dependencies(board, task)
+            if task.get("plan_status") in {"required", "requested", "rejected"} or blockers:
+                update_teammate_state(manifest, recipient, "planning", f"assignment synced for {task_id}")
+                action["changes"].append("teammate_state=planning")
+                if blockers:
+                    action["changes"].append(f"blocked_by={','.join(blockers)}")
+            else:
+                update_teammate_state(manifest, recipient, "working", f"assignment synced for {task_id}")
+                action["changes"].append("teammate_state=working")
+                if task.get("status") == "pending":
+                    task["status"] = "in_progress"
+                    action["changes"].append("task_status=in_progress")
+            teammate = find_teammate_or_none(manifest, recipient)
+            if teammate is not None:
+                teammate["last_heartbeat_at"] = now_iso()
+            append_task_note(task, f"[mail-sync {message['message_id']}] task_assignment consumed by {recipient}")
+            action["changes"].append("heartbeat=updated")
+
+    elif kind in {"lead_broadcast", "lead_triage"} and task_id:
+        task = find_task(board, task_id)
+        bucket = extract_tagged_value(message.get("body", ""), "bucket")
+        append_task_note(task, f"[mail-sync {message['message_id']}] {kind} bucket={bucket or '-'}")
+        if bucket == "approval" and task.get("owner") == recipient:
+            blockers = unresolved_dependencies(board, task)
+            if task.get("plan_status") in {"approved", "not_required"} and task.get("status") == "pending" and not blockers:
+                task["status"] = "in_progress"
+                action["changes"].append("task_status=in_progress")
+            update_teammate_state(
+                manifest,
+                recipient,
+                "planning" if blockers else "working",
+                f"{kind} approval for {task_id}",
+            )
+            action["changes"].append("teammate_state=planning" if blockers else "teammate_state=working")
+        elif bucket == "routing" and task.get("owner") == recipient and task.get("status") == "in_progress":
+            task["status"] = "pending"
+            action["changes"].append("task_status=pending")
+            update_teammate_state(manifest, recipient, "planning", f"{kind} routing for {task_id}")
+            action["changes"].append("teammate_state=planning")
+
+    elif kind == "plan_approval_response" and task_id:
+        task = find_task(board, task_id)
+        decision = extract_tagged_value(message.get("body", ""), "decision")
+        append_task_note(task, f"[mail-sync {message['message_id']}] plan_approval_response decision={decision or '-'}")
+        if decision == "approved" and task.get("owner") == recipient:
+            blockers = unresolved_dependencies(board, task)
+            if task.get("status") == "pending" and not blockers:
+                task["status"] = "in_progress"
+                action["changes"].append("task_status=in_progress")
+            update_teammate_state(
+                manifest,
+                recipient,
+                "planning" if blockers else "working",
+                f"plan approved for {task_id}",
+            )
+            action["changes"].append("teammate_state=planning" if blockers else "teammate_state=working")
+        elif decision == "rejected" and task.get("owner") == recipient:
+            update_teammate_state(manifest, recipient, "planning", f"plan rejected for {task_id}")
+            action["changes"].append("teammate_state=planning")
+
+    return action
+
+
 def build_lead_broadcast_body(bucket: str, message: dict[str, Any], task_id: str) -> str:
     lines = [
         f"source_message: `{message['message_id']}`",
@@ -992,6 +1149,21 @@ def command_lead_triage(args: argparse.Namespace) -> int:
                     task,
                     f"[lead-triage {message['message_id']}] bucket={bucket}",
                 )
+                rule_changes = apply_task_rule_updates(
+                    manifest,
+                    board,
+                    task,
+                    owner=args.set_owner,
+                    status=args.set_status,
+                    add_depends_on=args.add_depends_on,
+                    remove_depends_on=args.remove_depends_on,
+                    clear_depends_on=args.clear_depends_on,
+                )
+                if rule_changes:
+                    append_task_note(
+                        task,
+                        f"[lead-triage {message['message_id']}] rules: {', '.join(rule_changes)}",
+                    )
             reply = make_mailbox_message(
                 next_id,
                 manifest["lead"]["id"],
@@ -1109,6 +1281,34 @@ def command_mailbox_pop(args: argparse.Namespace) -> int:
             cursor["last_read_index"] = max(item["index"] for item in pending) + 1
             save_cursor(paths, consumer, cursor)
     print(json.dumps({"messages": pending}, ensure_ascii=False, indent=2))
+    return 0
+
+
+def command_mailbox_sync(args: argparse.Namespace) -> int:
+    paths = resolve_team_dir(Path(args.base), args.team_name)
+    with team_lock(paths):
+        manifest = load_manifest(paths)
+        board = load_task_board(paths)
+        recipient = slugify(args.recipient)
+        if recipient != manifest["lead"]["id"]:
+            find_teammate(manifest, recipient)
+        messages = read_mailbox(paths)
+        synced = []
+        for message in messages:
+            if message.get("recipient") != recipient:
+                continue
+            if message.get("status") not in {"open", "acked"}:
+                continue
+            action = sync_message_to_artifacts(manifest, board, recipient, message)
+            message["status"] = "resolved"
+            message["synced_at"] = now_iso()
+            synced.append(action)
+            if len(synced) >= args.limit:
+                break
+        save_task_board(paths, board)
+        save_manifest(paths, manifest)
+        save_mailbox(paths, messages)
+    print(json.dumps({"synced": synced}, ensure_ascii=False, indent=2))
     return 0
 
 
@@ -1292,6 +1492,11 @@ def build_parser() -> argparse.ArgumentParser:
     triage_parser.add_argument("team_name")
     triage_parser.add_argument("--message-id", default="")
     triage_parser.add_argument("--task-id", default="")
+    triage_parser.add_argument("--set-owner", default="")
+    triage_parser.add_argument("--set-status", default="")
+    triage_parser.add_argument("--add-depends-on", action="append", default=[])
+    triage_parser.add_argument("--remove-depends-on", action="append", default=[])
+    triage_parser.add_argument("--clear-depends-on", action="store_true")
     triage_parser.add_argument("--limit", type=int, default=20)
     triage_parser.set_defaults(handler=command_lead_triage)
 
@@ -1310,6 +1515,12 @@ def build_parser() -> argparse.ArgumentParser:
     ack_parser.add_argument("team_name")
     ack_parser.add_argument("ack_token", nargs="+")
     ack_parser.set_defaults(handler=command_mailbox_ack)
+
+    sync_parser = subparsers.add_parser("mail-sync")
+    sync_parser.add_argument("team_name")
+    sync_parser.add_argument("--recipient", required=True)
+    sync_parser.add_argument("--limit", type=int, default=20)
+    sync_parser.set_defaults(handler=command_mailbox_sync)
 
     status_parser = subparsers.add_parser("status")
     status_parser.add_argument("team_name")

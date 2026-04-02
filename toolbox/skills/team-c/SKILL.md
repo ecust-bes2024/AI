@@ -122,7 +122,8 @@ Use the runtime mailbox helpers:
 ./scripts/mailbox.sh mail-send <team-name> --sender lead --recipient reviewer --subject "Clarify finding" --body "Check the token refresh path too."
 ./scripts/mailbox.sh mail-send <team-name> --sender reviewer --recipient architect --subject "Need interface detail" --body "Which adapter owns session rotation?"
 ./scripts/mailbox.sh ask-lead <team-name> --sender reviewer --subject "Need approval" --body "Can I widen the task scope?"
-./scripts/mailbox.sh lead-triage <team-name> --task-id T2
+./scripts/mailbox.sh lead-triage <team-name> --task-id T2 --set-status pending --add-depends-on T1
+./scripts/mailbox.sh mail-sync <team-name> --recipient reviewer
 ./scripts/mailbox.sh mail-pop <team-name> --recipient lead
 ./scripts/mailbox.sh mail-ack <team-name> ACK-1
 ./scripts/mailbox.sh mail-resolve <team-name> M2
@@ -138,6 +139,13 @@ Task ownership changes also emit `task_assignment` mailbox entries, so assignmen
 
 - writes a triage note into the related task when `--task-id` is provided or a `T<number>` reference can be inferred from the ask
 - emits `lead_broadcast` mailbox updates for `approval` and `routing` buckets so shared execution changes are visible to the team
+- can directly mutate task rules with `--set-owner`, `--set-status`, `--add-depends-on`, `--remove-depends-on`, and `--clear-depends-on`
+
+`mail-sync` now lets a teammate consume mailbox effects into shared artifacts:
+
+- `task_assignment` updates teammate heartbeat/state and can move a ready task to `in_progress`
+- `lead_broadcast` / `lead_triage` can move owned tasks between `pending` and `in_progress` based on the broadcast bucket
+- `plan_approval_response` updates teammate state and task status when approval is granted
 
 ### 5. Plan approval
 

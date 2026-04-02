@@ -75,7 +75,7 @@ if [[ -z "${ACK_TOKEN}" ]]; then
 fi
 
 "${SCRIPT_DIR}/mailbox.sh" --base "${BASE_DIR}" mail-ack "${TEAM_NAME}" "${ACK_TOKEN}" >/dev/null
-"${SCRIPT_DIR}/mailbox.sh" --base "${BASE_DIR}" lead-triage "${TEAM_NAME}" --task-id "${TASK1}" >/dev/null
+"${SCRIPT_DIR}/mailbox.sh" --base "${BASE_DIR}" lead-triage "${TEAM_NAME}" --task-id "${TASK1}" --set-status pending --add-depends-on "${TASK2}" >/dev/null
 
 "${SCRIPT_DIR}/task-board.sh" --base "${BASE_DIR}" plan-request "${TEAM_NAME}" "${TASK1}" "${TEAM_DIR}/sample-plan.md" --note "Ready for review" >/dev/null
 
@@ -107,6 +107,9 @@ if [[ "${PLAN_RESPONSES}" -lt 1 ]]; then
   exit 1
 fi
 
+"${SCRIPT_DIR}/mailbox.sh" --base "${BASE_DIR}" mail-sync "${TEAM_NAME}" --recipient reviewer >/dev/null
+"${SCRIPT_DIR}/mailbox.sh" --base "${BASE_DIR}" mail-sync "${TEAM_NAME}" --recipient qa >/dev/null
+
 python3 - <<PY
 import json
 from pathlib import Path
@@ -121,6 +124,15 @@ assert any(line.get("kind") == "lead_triage" and line.get("recipient") == "revie
 assert any(line.get("kind") == "lead_broadcast" and line.get("recipient") == "qa" for line in lines), lines
 task = next(task for task in board["tasks"] if task["task_id"] == "${TASK1}")
 assert "[lead-triage" in task.get("notes", ""), task
+assert "${TASK2}" in task.get("depends_on", []), task
+assert task.get("status") == "pending", task
+task2 = next(task for task in board["tasks"] if task["task_id"] == "${TASK2}")
+assert task2.get("status") == "in_progress", task2
+manifest = json.loads((team_dir / "team.json").read_text())
+reviewer = next(member for member in manifest["teammates"] if member["id"] == "reviewer")
+qa = next(member for member in manifest["teammates"] if member["id"] == "qa")
+assert reviewer.get("state") == "planning", reviewer
+assert qa.get("state") == "working", qa
 print("mailbox extensions ok")
 PY
 

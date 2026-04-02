@@ -1,0 +1,34 @@
+{
+  "tasks": [
+    {
+      "task_id": "T1",
+      "title": "Review runtime",
+      "owner": "reviewer",
+      "status": "pending",
+      "depends_on": [
+        "T2"
+      ],
+      "deliverable": "",
+      "notes": "[lead-triage M3] bucket=approval\n[lead-triage M3] rules: depends_on+=T2\n[mail-sync M1] task_assignment consumed by reviewer\n[mail-sync M4] lead_triage bucket=approval\n[mail-sync M5] lead_broadcast bucket=approval\n[mail-sync M8] plan_approval_response decision=approved\n[mail-sync M6] lead_broadcast bucket=approval",
+      "created_at": "2026-04-01T07:50:43.157212+00:00",
+      "updated_at": "2026-04-01T07:50:43.440994+00:00",
+      "plan_status": "approved",
+      "plan_note": "ready",
+      "plan_file": "approvals/T1-plan.md"
+    },
+    {
+      "task_id": "T2",
+      "title": "Secondary work",
+      "owner": "qa",
+      "status": "in_progress",
+      "depends_on": [],
+      "deliverable": "",
+      "notes": "[mail-sync M2] task_assignment consumed by qa",
+      "created_at": "2026-04-01T07:50:43.203899+00:00",
+      "updated_at": "2026-04-01T07:50:43.440928+00:00",
+      "plan_status": "not_required",
+      "plan_note": "",
+      "plan_file": ""
+    }
+  ]
+}
