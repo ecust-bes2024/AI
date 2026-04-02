@@ -56,19 +56,55 @@
 - 记录可复用的发现到 docs/protocol/prior-art.md
 ```
 
-#### Phase 1-4: 协作流程
-`protocol-analyst` → `security-researcher` → `reverse-engineer` → `api-architect` → `tool-developer` → `doc-writer`
+#### Phase 1: 流量抓包（串行）
+`protocol-analyst` 抓包，产出原始流量数据。
 
-> 每个 teammate 在执行自己的任务时，可以按需 spawn 子 agent 并行处理子任务。管线化是 teammate 内部的实现细节，不改变主干协作流程。
-
-#### Phase 5: 闭环验证
-逆向结果必须经过自动化验证：
+#### Phase 2: 并行分析（3 个 agent 并行）
+抓包完成后，以下三个分析任务**同时启动**，互不依赖：
 
 ```
-逆向出 API 规范 → mitmproxy2swagger 生成 OpenAPI
-→ schemathesis 自动 fuzzing → 发现不一致
-→ 修正规范 → 再测试 → 直到通过
+┌─ protocol-analyst:   协议字段分析（端点、参数、响应格式）
+├─ security-researcher: 加密机制分析（算法、密钥、认证流程）  ← 并行
+└─ reverse-engineer:   二进制逆向（Protobuf schema、算法还原）← 并行
 ```
+
+> 使用 Agent tool 并行调用，每个 agent 接收主 agent 提供的完整上下文（抓包摘要 + 关键数据包），不自行读取大文件。
+
+#### Phase 3: API 设计（串行，依赖 Phase 2 全部完成）
+`api-architect` 基于三方分析结果设计 API 接口。
+
+#### Phase 4: 实现 + 文档（2 个 agent 并行）
+
+```
+┌─ tool-developer: CLI 实现
+└─ doc-writer:     API 文档编写  ← 并行
+```
+
+#### Phase 5: 三层闭环验证
+
+逆向结果必须经过三层验证，每层通过后才进入下一层：
+
+```
+Layer 1: 自动化测试（现有）
+  逆向出 API 规范 → mitmproxy2swagger 生成 OpenAPI
+  → schemathesis 自动 fuzzing → 发现不一致
+  → 修正规范 → 再测试 → 直到通过
+
+Layer 2: Claude 规格审查（Claude subagent）
+  派发 Claude subagent 检查：
+  - 逆向出的协议字段是否覆盖所有观察到的流量
+  - API 端点是否完整（对比抓包中的所有请求路径）
+  - 加密分析结论是否有充分证据支撑
+
+Layer 3: Codex 代码 + 对抗审查（GPT-5.4 视角）
+  /codex:review           → 审查 CLI 实现的代码质量
+  /codex:adversarial-review → 质疑逆向假设：
+    - "这个字段真的是 session_id 吗？证据？"
+    - "加密方式的判断依据充分吗？"
+    - "有没有遗漏的 API 端点或未覆盖的边界情况？"
+```
+
+> **为什么用 Codex 做对抗审查？** 不同模型有不同盲区。Claude 写的逆向结论让 GPT-5.4 来挑战，比自审更有效。逆向工程本质上是在做假设，需要有人来质疑这些假设。
 
 #### AI 辅助（贯穿全流程）
 - 使用 **GhidraMCP** 让 Claude 直接操作 Ghidra 进行反编译和分析
@@ -83,6 +119,51 @@
 
 ### 4. 安全审查
 `security-researcher` → 风险评估 → 加固方案 → `tool-developer` → 实施
+
+## Agent 编排原则
+
+### Fresh Agent Per Task
+
+每个任务派发一个新 agent，用完即销毁。借鉴 Claude Code 内部的 subagent-driven-development 模式。
+
+**主 agent（协调者）负责：**
+- 读取大文件（抓包日志、二进制数据）
+- 提取关键信息，构造精简上下文
+- 派发子 agent 并提供完整上下文
+- 汇总子 agent 结果
+
+**子 agent 负责：**
+- 接收主 agent 提供的完整上下文（不自行读取大文件）
+- 执行单一任务
+- 返回结构化结果
+- 完成后销毁
+
+**好处：**
+- 避免上下文污染（10MB 抓包文件不会进入所有 agent 的上下文）
+- 并行安全（agent 间不共享状态）
+- 失败隔离（一个 agent 失败不影响其他）
+
+### 并行调度规则
+
+**可以并行的任务：**
+- 不同维度的分析（协议 / 安全 / 二进制）
+- 实现与文档编写
+- 多个独立子系统的逆向
+
+**必须串行的任务：**
+- 有数据依赖（如 API 设计依赖协议分析结果）
+- 会编辑同一文件
+- 需要前一步的结论作为输入
+
+### Codex 跨模型审查
+
+在 Phase 5 中使用 `/codex:review` 和 `/codex:adversarial-review` 引入 GPT-5.4 视角。
+
+| 命令 | 用途 | 触发时机 |
+|------|------|----------|
+| `/codex:review` | 代码质量审查 | CLI 实现完成后 |
+| `/codex:adversarial-review` | 质疑逆向假设和设计选择 | 三层验证的最后一步 |
+| `/codex:rescue` | 深度调查、卡住时的二次诊断 | 任何阶段遇到瓶颈时 |
 
 ## 知识积累（必须执行）
 
