@@ -1,0 +1,320 @@
+{
+  "repo_info": {
+    "name": "hermes-agent-self-evolution",
+    "full_name": "NousResearch/hermes-agent-self-evolution",
+    "description": "⚒ Evolutionary self-improvement for Hermes Agent — optimize skills, prompts, and code using DSPy + GEPA",
+    "url": "https://github.com/NousResearch/hermes-agent-self-evolution",
+    "homepage": null,
+    "stars": 797,
+    "forks": 72,
+    "open_issues": 11,
+    "default_branch": "main",
+    "created_at": "2026-03-09T10:42:48+00:00",
+    "updated_at": "2026-04-09T02:31:35+00:00",
+    "language": "Python",
+    "license": null,
+    "topics": []
+  },
+  "readme": "# 🧬 Hermes Agent Self-Evolution\n\n**Evolutionary self-improvement for [Hermes Agent](https://github.com/NousResearch/hermes-agent).**\n\nHermes Agent Self-Evolution uses DSPy + GEPA (Genetic-Pareto Prompt Evolution) to automatically evolve and optimize Hermes Agent's skills, tool descriptions, system prompts, and code — producing measurably better versions through reflective evolutionary search.\n\n**No GPU training required.** Everything operates via API calls — mutating text, evaluating results, and selecting the best variants. ~$2-10 per optimization run.\n\n## How It Works\n\n```\nRead current skill/prompt/tool ──► Generate eval dataset\n                                        │\n                                        ▼\n                                   GEPA Optimizer ◄── Execution traces\n                                        │                    ▲\n                                        ▼                    │\n                                   Candidate variants ──► Evaluate\n                                        │\n                                   Constraint gates (tests, size limits, benchmarks)\n                                        │\n                                        ▼\n                                   Best variant ──► PR against hermes-agent\n```\n\nGEPA reads execution traces to understand *why* things fail (not just that they failed), then proposes targeted improvements. ICLR 2026 Oral, MIT licensed.\n\n## Quick Start\n\n```bash\n# Install\ngit clone https://github.com/NousResearch/hermes-agent-self-evolution.git\ncd hermes-agent-self-evolution\npip install -e \".[dev]\"\n\n# Point at your hermes-agent repo\nexport HERMES_AGENT_REPO=~/.hermes/hermes-agent\n\n# Evolve a skill (synthetic eval data)\npython -m evolution.skills.evolve_skill \\\n    --skill github-code-review \\\n    --iterations 10 \\\n    --eval-source synthetic\n\n# Or use real session history from Claude Code, Copilot, and Hermes\npython -m evolution.skills.evolve_skill \\\n    --skill github-code-review \\\n    --iterations 10 \\\n    --eval-source sessiondb\n```\n\n## What It Optimizes\n\n| Phase | Target | Engine | Status |\n|-------|--------|--------|--------|\n| **Phase 1** | Skill files (SKILL.md) | DSPy + GEPA | ✅ Implemented |\n| **Phase 2** | Tool descriptions | DSPy + GEPA | 🔲 Planned |\n| **Phase 3** | System prompt sections | DSPy + GEPA | 🔲 Planned |\n| **Phase 4** | Tool implementation code | Darwinian Evolver | 🔲 Planned |\n| **Phase 5** | Continuous improvement loop | Automated pipeline | 🔲 Planned |\n\n## Engines\n\n| Engine | What It Does | License |\n|--------|-------------|---------|\n| **[DSPy](https://github.com/stanfordnlp/dspy) + [GEPA](https://github.com/gepa-ai/gepa)** | Reflective prompt evolution — reads execution traces, proposes targeted mutations | MIT |\n| **[Darwinian Evolver](https://github.com/imbue-ai/darwinian_evolver)** | Code evolution with Git-based organisms | AGPL v3 (external CLI only) |\n\n## Guardrails\n\nEvery evolved variant must pass:\n1. **Full test suite** — `pytest tests/ -q` must pass 100%\n2. **Size limits** — Skills ≤15KB, tool descriptions ≤500 chars\n3. **Caching compatibility** — No mid-conversation changes\n4. **Semantic preservation** — Must not drift from original purpose\n5. **PR review** — All changes go through human review, never direct commit\n\n## Full Plan\n\nSee [PLAN.md](PLAN.md) for the complete architecture, evaluation data strategy, constraints, benchmarks integration, and phased timeline.\n\n## License\n\nMIT — © 2026 Nous Research\n",
+  "file_tree": [
+    {
+      "path": ".gitignore",
+      "type": "file",
+      "size": 270
+    },
+    {
+      "path": "PLAN.md",
+      "type": "file",
+      "size": 40694
+    },
+    {
+      "path": "README.md",
+      "type": "file",
+      "size": 3561
+    },
+    {
+      "path": "datasets",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "evolution",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "generate_report.py",
+      "type": "file",
+      "size": 24538
+    },
+    {
+      "path": "pyproject.toml",
+      "type": "file",
+      "size": 1080
+    },
+    {
+      "path": "reports",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "tests",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "datasets/.gitkeep",
+      "type": "file",
+      "size": 0
+    },
+    {
+      "path": "datasets/skills",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "datasets/tools",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "evolution/__init__.py",
+      "type": "file",
+      "size": 109
+    },
+    {
+      "path": "evolution/code",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "evolution/core",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "evolution/monitor",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "evolution/prompts",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "evolution/skills",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "evolution/tools",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "reports/phase1_validation_report.pdf",
+      "type": "file",
+      "size": 14535
+    },
+    {
+      "path": "tests/__init__.py",
+      "type": "file",
+      "size": 0
+    },
+    {
+      "path": "tests/core",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "tests/skills",
+      "type": "dir",
+      "size": null
+    },
+    {
+      "path": "datasets/skills/.gitkeep",
+      "type": "file",
+      "size": 0
+    },
+    {
+      "path": "datasets/tools/.gitkeep",
+      "type": "file",
+      "size": 0
+    },
+    {
+      "path": "evolution/code/__init__.py",
+      "type": "file",
+      "size": 41
+    },
+    {
+      "path": "evolution/core/__init__.py",
+      "type": "file",
+      "size": 136
+    },
+    {
+      "path": "evolution/core/config.py",
+      "type": "file",
+      "size": 2183
+    },
+    {
+      "path": "evolution/core/constraints.py",
+      "type": "file",
+      "size": 6176
+    },
+    {
+      "path": "evolution/core/dataset_builder.py",
+      "type": "file",
+      "size": 7437
+    },
+    {
+      "path": "evolution/core/external_importers.py",
+      "type": "file",
+      "size": 28414
+    },
+    {
+      "path": "evolution/core/fitness.py",
+      "type": "file",
+      "size": 5641
+    },
+    {
+      "path": "evolution/monitor/__init__.py",
+      "type": "file",
+      "size": 44
+    },
+    {
+      "path": "evolution/prompts/__init__.py",
+      "type": "file",
+      "size": 44
+    },
+    {
+      "path": "evolution/skills/__init__.py",
+      "type": "file",
+      "size": 48
+    },
+    {
+      "path": "evolution/skills/evolve_skill.py",
+      "type": "file",
+      "size": 13907
+    },
+    {
+      "path": "evolution/skills/skill_module.py",
+      "type": "file",
+      "size": 4011
+    },
+    {
+      "path": "evolution/tools/__init__.py",
+      "type": "file",
+      "size": 42
+    },
+    {
+      "path": "tests/core/__init__.py",
+      "type": "file",
+      "size": 0
+    },
+    {
+      "path": "tests/core/test_constraints.py",
+      "type": "file",
+      "size": 3390
+    },
+    {
+      "path": "tests/core/test_external_importers.py",
+      "type": "file",
+      "size": 50897
+    },
+    {
+      "path": "tests/skills/__init__.py",
+      "type": "file",
+      "size": 0
+    },
+    {
+      "path": "tests/skills/test_skill_module.py",
+      "type": "file",
+      "size": 2692
+    }
+  ],
+  "languages": {
+    "Python": {
+      "bytes": 149750,
+      "percentage": 100.0
+    }
+  },
+  "signatures": [],
+  "test_examples": [],
+  "issues": [
+    {
+      "number": 9,
+      "title": "use anthropic Max plan subscription",
+      "state": "closed",
+      "labels": [],
+      "milestone": null,
+      "created_at": "2026-04-03T10:12:59+00:00",
+      "updated_at": "2026-04-07T13:14:25+00:00",
+      "closed_at": "2026-04-07T13:14:25+00:00",
+      "url": "https://github.com/NousResearch/hermes-agent-self-evolution/issues/9",
+      "body": "Hi, Instead of using API keys, is it possible to use oAuth subscriptions instead?"
+    },
+    {
+      "number": 12,
+      "title": "Fitness metric uses keyword overlap only — insufficient signal for optimization",
+      "state": "open",
+      "labels": [],
+      "milestone": null,
+      "created_at": "2026-04-03T12:55:22+00:00",
+      "updated_at": "2026-04-03T12:55:22+00:00",
+      "closed_at": null,
+      "url": "https://github.com/NousResearch/hermes-agent-self-evolution/issues/12",
+      "body": "## Issue\n\n`skill_fitness_metric()` in `fitness.py` uses keyword overlap between expected and actual output as its only scoring mechanism. This produces scores in a narrow 37-49% band regardless of output quality, giving the optimizer almost no signal to differentiate good from bad variants.\n\n## Current behavior\n\n```python\n# fitness.py — keyword overlap scoring\nexpected_words = set(expected_lower.split())\noutput_words = set(output_lower.split())\noverlap = len(expected_words & output_words) / len("
+    },
+    {
+      "number": 11,
+      "title": "Constraint validator rejects every evolved skill: checks frontmatter on body-only text",
+      "state": "open",
+      "labels": [],
+      "milestone": null,
+      "created_at": "2026-04-03T12:55:04+00:00",
+      "updated_at": "2026-04-03T12:55:04+00:00",
+      "closed_at": null,
+      "url": "https://github.com/NousResearch/hermes-agent-self-evolution/issues/11",
+      "body": "## Bug\n\n`_check_skill_structure()` in `constraints.py` checks for YAML frontmatter (`---`) and `name:`/`description:` fields. However, `validate_all()` receives `skill[\"body\"]` — the markdown text *after* frontmatter has been stripped by `load_skill()`.\n\nSince the body never starts with `---`, the constraint **always fails**, and every successfully evolved skill is rejected as `evolved_FAILED.md`.\n\n## Code path\n\n```python\n# evolve_skill.py line 122 — passes body, not full file:\nbaseline_constrai"
+    },
+    {
+      "number": 10,
+      "title": "GEPA optimizer fails with DSPy >=3.1: max_steps is not a valid parameter",
+      "state": "open",
+      "labels": [],
+      "milestone": null,
+      "created_at": "2026-04-03T12:54:46+00:00",
+      "updated_at": "2026-04-03T12:54:46+00:00",
+      "closed_at": null,
+      "url": "https://github.com/NousResearch/hermes-agent-self-evolution/issues/10",
+      "body": "## Bug\n\n`evolve_skill.py` calls `dspy.GEPA(metric=..., max_steps=iterations)`, but DSPy 3.x GEPA has no `max_steps` parameter. The valid parameters are `auto`, `max_metric_calls`, and `max_full_evals`.\n\n## Reproduction\n\n```bash\npip install \"dspy>=3.0.0\"  # any 3.x version\npython -m evolution.skills.evolve_skill --skill any-skill --iterations 10\n```\n\nOutput:\n```\nGEPA not available (GEPA.__init__() got an unexpected keyword argument 'max_steps'), falling back to MIPROv2\n```\n\nGEPA always falls back"
+    },
+    {
+      "number": 3,
+      "title": "Feature proposal: import eval data from Claude Code, Copilot, and Hermes session history",
+      "state": "closed",
+      "labels": [],
+      "milestone": null,
+      "created_at": "2026-03-29T08:40:52+00:00",
+      "updated_at": "2026-03-29T15:07:02+00:00",
+      "closed_at": "2026-03-29T15:07:02+00:00",
+      "url": "https://github.com/NousResearch/hermes-agent-self-evolution/issues/3",
+      "body": "## Problem\n\nThe self-evolution pipeline currently supports two eval data sources: synthetic generation and golden datasets. Both require upfront work — synthetic data is model-generated and may not reflect real usage, while golden datasets need manual curation.\n\nMeanwhile, anyone using Hermes alongside other AI tools already has a rich source of real task/response pairs sitting on disk:\n\n- **Claude Code** stores user prompts at `~/.claude/history.jsonl`\n- **GitHub Copilot** stores full conversat"
+    },
+    {
+      "number": 1,
+      "title": "Question",
+      "state": "open",
+      "labels": [],
+      "milestone": null,
+      "created_at": "2026-03-24T09:06:10+00:00",
+      "updated_at": "2026-03-24T09:06:10+00:00",
+      "closed_at": null,
+      "url": "https://github.com/NousResearch/hermes-agent-self-evolution/issues/1",
+      "body": "Hey!\nI don't want to push you  but this project is so fcking good.\nCould you keep update it please? :)"
+    }
+  ],
+  "changelog": "",
+  "releases": []
+}
